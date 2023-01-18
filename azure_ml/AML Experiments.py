@@ -63,6 +63,31 @@ print(
 
 # %%
 
+# Get a python environment environment (or create it, if it doesnt exist) 
+custom_env_name = "cmd-aml-test-20230118-env"
+dependencies_dir = "./dependencies"
+
+try:
+    pipeline_job_env = ml_client.environments.get(custom_env_name, label="latest")
+    print(
+        f"You already have an environment named {custom_env_name}, we'll reuse it as is."
+    )
+
+except Exception:
+    pipeline_job_env = Environment(
+        name=custom_env_name,
+        description="Custom environment for Azure ML Service test",
+        tags={"scikit-learn": "0.24.2"},
+        conda_file=os.path.join(dependencies_dir, f"{custom_env_name}.yml"),
+        image="mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04:latest",
+    )
+    pipeline_job_env = ml_client.environments.create_or_update(pipeline_job_env)
+
+print(
+    f"Environment with name {pipeline_job_env.name} is registered to workspace, the version is {pipeline_job_env.version}"
+)
+
+
 # For reference only: Sample code to create a new python virtual environment in the cloud...
 
 # # Create a custom environment from a docker image:
@@ -90,23 +115,6 @@ print(
 # )
 # ml_client.environments.create_or_update(env_docker_context)
 
-
-# Execute...
-dependencies_dir = "./dependencies"
-custom_env_name = "cmd-aml-test-20230118-env"
-
-pipeline_job_env = Environment(
-    name=custom_env_name,
-    description="Custom environment for Azure ML Service test",
-    tags={"scikit-learn": "0.24.2"},
-    conda_file=os.path.join(dependencies_dir, f"{custom_env_name}.yml"),
-    image="mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04:latest",
-)
-pipeline_job_env = ml_client.environments.create_or_update(pipeline_job_env)
-
-print(
-    f"Environment with name {pipeline_job_env.name} is registered to workspace, the environment version is {pipeline_job_env.version}"
-)
 
 
 #%%
