@@ -43,9 +43,7 @@ ml_compute_name = "compins-carlosm-gpu-nv6"
 
 try:
     ml_compute_instance = ml_client.compute.get(ml_compute_name)
-    print(
-        f"You already have a cluster named {ml_compute_name}, we'll reuse it as is."
-    )
+    print(f"You already have a compute named {ml_compute_name}, we'll reuse it as is.")
 
 except Exception:
     ml_compute_instance = ComputeInstance(
@@ -54,11 +52,13 @@ except Exception:
     print("Creating a new GPU compute instance...")
     ml_client.begin_create_or_update(ml_compute_instance)
 
-print(
-    f"Compute {ml_compute_instance.name} exists: state:{ml_compute_instance.state}, size:{ml_compute_instance.size}."
-)
+print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}, size:{ml_compute_instance.size}.")
 
-
+if ml_compute_instance.state == "Stopped":
+    print("Starting GPU compute instance...")
+    ml_client.compute.begin_start(ml_compute_name).wait()
+    ml_compute_instance = ml_client.compute.get(ml_compute_name)
+    print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}.")
 
 
 # %%
@@ -69,9 +69,7 @@ dependencies_dir = "./dependencies"
 
 try:
     pipeline_job_env = ml_client.environments.get(custom_env_name, label="latest")
-    print(
-        f"You already have an environment named {custom_env_name}, we'll reuse it as is."
-    )
+    print(f"You already have an environment named {custom_env_name}, we'll reuse it as is.")
 
 except Exception:
     pipeline_job_env = Environment(
@@ -83,12 +81,10 @@ except Exception:
     )
     pipeline_job_env = ml_client.environments.create_or_update(pipeline_job_env)
 
-print(
-    f"Environment with name {pipeline_job_env.name} is registered to workspace, the version is {pipeline_job_env.version}"
-)
+print(f"Environment with name {pipeline_job_env.name} is registered to workspace, the version is {pipeline_job_env.version}")
 
 
-# For reference only: Sample code to create a new python virtual environment in the cloud...
+# For reference: Sample code to create new python virtual environments in various ways...
 
 # # Create a custom environment from a docker image:
 # env_docker_image = Environment(
@@ -119,5 +115,18 @@ print(
 
 #%%
 
+
+
+
+
+#%%
+
+# END!  Stop the compute instance when the script is over. 
+
+if ml_compute_instance.state == "Running":
+    print("Stopping GPU compute instance...")
+    ml_client.compute.begin_stop(ml_compute_name).wait()
+    ml_compute_instance = ml_client.compute.get(ml_compute_name)
+    print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}.")
 
 
