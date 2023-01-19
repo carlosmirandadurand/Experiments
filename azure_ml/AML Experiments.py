@@ -2,6 +2,7 @@
 #%%
 import os
 from dotenv import load_dotenv
+import uuid
 
 from azure.ai.ml import MLClient
 from azure.ai.ml import command
@@ -9,6 +10,7 @@ from azure.ai.ml import Input
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
+from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, Model
 
 
 
@@ -150,12 +152,59 @@ training_job = command(
         display_name = "CMD AML Test: credit_default_prediction",
     )
 
-ml_client.create_or_update(training_job)
+# Uncomment to re-run....
+# ml_client.create_or_update(training_job)
 
 
 #%%
 
+# Creating an online endpoint to serve the model for inference
+
+online_endpoint_name = "credit-endpoint-" + str(uuid.uuid4())[:8]
+
+endpoint = ManagedOnlineEndpoint(
+    name = online_endpoint_name,
+    description = "CMD AML Test online endpoint for credit application",
+    auth_mode="key",
+    tags={
+        "training_dataset": "credit_defaults",
+        "model_type": "sklearn.GradientBoostingClassifier",
+    },
+)
+
+endpoint = ml_client.online_endpoints.begin_create_or_update(endpoint).result()
+
+print(f"Endpoint {endpoint.name} provisioning state: {endpoint.provisioning_state}")
+
+
+
 #%%
+
+# Retrieve the online endpoint and publish model for inference
+
+endpoint = ml_client.online_endpoints.get(name = online_endpoint_name)
+
+print(f'Endpoint "{endpoint.name}" with provisioning state "{endpoint.provisioning_state}" is retrieved')
+
+latest_model_version = max(
+    [int(m.version) for m in ml_client.models.list(name=ml_model_name)]
+)
+
+print(f"Latest version of model: {latest_model_version}")
+
+ml_model_for_inference = ml_client.models.get(name=ml_model_name, version=latest_model_version)
+
+blue_deployment = ManagedOnlineDeployment(
+    name = "blue",
+    endpoint_name = online_endpoint_name,
+    model = ml_model_for_inference,
+    instance_type = "Standard_DS3_v2",
+    instance_count = 1,
+)
+
+# # Uncomment when quota has been raised...
+# blue_deployment = ml_client.begin_create_or_update(blue_deployment).result()
+
 
 #%%
 
