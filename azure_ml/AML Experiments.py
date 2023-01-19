@@ -1,3 +1,7 @@
+# Testing the Pythion SDK v2 
+# Azure Machine LEarning Service 
+# Source: https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day
+
 
 #%%
 import os
@@ -208,7 +212,22 @@ blue_deployment = ManagedOnlineDeployment(
 
 #%%
 
+# Test the blue deployment with some sample data
+ml_client.online_endpoints.invoke(
+    endpoint_name = online_endpoint_name,
+    request_file = "./deploy/credit_sample_request-request.json",
+    deployment_name = "blue",
+)
+
+
+
 #%%
+
+# Cleanup
+
+ml_client.online_endpoints.begin_delete(name=online_endpoint_name)
+
+
 
 #%%
 
@@ -221,3 +240,5 @@ if ml_compute_instance.state == "Running":
     print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}.")
 
 
+
+# %%
