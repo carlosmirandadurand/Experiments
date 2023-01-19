@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 
 from azure.ai.ml import MLClient
+from azure.ai.ml import command
+from azure.ai.ml import Input
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
@@ -112,12 +114,52 @@ print(f"Environment with name {pipeline_job_env.name} is registered to workspace
 # ml_client.environments.create_or_update(env_docker_context)
 
 
+#%%
+
+ml_model_name = "cmd_aml_test_credit_defaults_model" 
+
+training_script_folder = "./scripts/"
+
+training_script_name = "credit_classification_train.py"
+
+training_data = Input(
+        type="uri_file",
+        path="https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls",
+    )
+
+training_input_parameters = dict(
+        data = training_data,
+        test_train_ratio = 0.2,
+        learning_rate = 0.25,
+        registered_model_name = ml_model_name,
+    )
+
+training_command = "python " + training_script_name \
+    + " --data ${{inputs.data}}" \
+    + " --test_train_ratio ${{inputs.test_train_ratio}}" \
+    + " --learning_rate ${{inputs.learning_rate}}" \
+    + " --registered_model_name ${{inputs.registered_model_name}}"
+
+training_job = command(
+        inputs = training_input_parameters,
+        code = training_script_folder, 
+        command = training_command,
+        environment = f"{pipeline_job_env.name}@latest",
+        compute = ml_compute_name,
+        experiment_name = "cmd_aml_test_train_model_credit_default_prediction",
+        display_name = "CMD AML Test: credit_default_prediction",
+    )
+
+ml_client.create_or_update(training_job)
+
 
 #%%
 
+#%%
 
+#%%
 
-
+#%%
 
 #%%
 
