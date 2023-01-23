@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import argparse
 import pandas as pd
@@ -43,34 +44,55 @@ def train():
 
     # Show parametrs
     log_title("TRAINING SCRIPT... START!")
-    log_title("SCRIPT PARAMETERS")
+    log_item("SCRIPT PARAMETERS:")
     log_item("\n".join(f"{k} = {v}" for k, v in vars(args).items()))
 
     # Record environment
     log_os_command("OPERATING SYSTEM", 'cat /etc/*-release')
     log_os_command("HARDWARE: CPU",    'cat /proc/cpuinfo')
     log_os_command("HARDWARE: GPU",    'nvidia-smi')
-    log_os_command("PROCESSES",        'ps -aux')
 
     log_os_command("VERSIONS",         'python --version')
     log_item("PyTorch ", torch.__version__)
     log_item("TensorFlow ", tf.__version__, "\n")
 
+    log_os_command("PROCESSES",          'ps -aux')
     log_os_command("PIP FREEZE SNAPHOT", 'pip freeze > snapshot_requirements.txt && cat snapshot_requirements.txt')
     log_os_command("APT LIST SNAPHOT",   "apt list --installed | sed s/Listing...// | awk -F '/' '{print $1}' > snapshot_apt_installed_packages.txt && cat snapshot_apt_installed_packages.txt")
 
     log_os_command("USER",               'whoami')
-    log_os_command("CURRENT DIRECORY",   'pwd')
-    log_os_command("DIRECORY CONTENTS",  'ls -alR')
+    log_os_command("CURRENT DIRECTORY",  'pwd')
+    log_item("CURRENT DIRECTORY ",  os.getcwd(), "\n")
+    log_os_command("DIRECTORY CONTENTS", 'ls -alR')
+    log_os_command("Workspace CONTENTS", 'ls -alR /workspace')
     log_os_command("ALL PYTHON FILES",   'find / -name *.py')
+    log_os_command("ALL YAML FILES",     'find / -name *.yml')
+    
 
 
-    #     # Virtual display
-    #     from pyvirtualdisplay import Display
-    #     virtual_display = Display(visible=0, size=(1400, 900))
-    #     virtual_display.start()
 
-    #     #define the hyperparameters in rl-baselines3-zoo/hyperparams/dqn.yml
+    # Virtual display
+    log_title("Virtual display")
+    from pyvirtualdisplay import Display
+    virtual_display = Display(visible=0, size=(1400, 900))
+    virtual_display.start()
+
+    # Load RL programs
+    log_os_command("CLONE STABLE BASELINES 3 ZOO", "git clone https://github.com/DLR-RM/rl-baselines3-zoo")
+    time.sleep(62)
+
+    # Check RL loaded programs
+    log_os_command("ALL YAML FILES (AFTER)",       'find / -name *.yml')
+    log_os_command("ALL PYTHON FILES (AFTER)",     'find / -name *.py')
+    os.chdir( os.path.join(os.getcwd(), "rl-baselines3-zoo")  )
+    log_os_command("CURRENT DIRECTORY",        "pwd")
+    log_item("CURRENT DIRECTORY ",  os.getcwd(), "\n")
+    log_os_command("PRINT DQN PARAMETERS",     "cat ./hyperparams/dqn.yml")
+    log_os_command("DIRECTORY CONTENTS",       'ls -alR')
+
+
+
+
 
     #     # Train the agent
     #    !python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/
