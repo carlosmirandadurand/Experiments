@@ -18,6 +18,9 @@ from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, Model
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+
 
 
 #%%
@@ -31,9 +34,16 @@ aml_workspace_name = os.getenv('aml_workspace_name')
 aml_compute_name = os.getenv('aml_compute_name_gpu')
 aml_environment_name = os.getenv('aml_environment_name_rl')
 aml_environment_label = os.getenv('aml_environment_label_rl')
+aml_key_vault_url = os.getenv('aml_key_vault_url')
 hf_access_token = os.getenv('hf_access_token')
 
+# Load credentials from Azure Identity
+aml_credential = DefaultAzureCredential()
+aml_secret_client = SecretClient(vault_url = aml_key_vault_url, credential = aml_credential)
+#aml_secret_client.set_secret("hf-access-token", hf_access_token) # Uncomment when the secret changes
+
 print("Loaded process paramenetrs from environment file.")
+
 
 
 #%%
@@ -55,13 +65,15 @@ training_input_parameters = dict(
         test_train_ratio = 0.2,
         learning_rate = 0.25,
         registered_model_name = aml_model_name,
+        key_vault_url = aml_key_vault_url,
     )
 
 training_command = "python " + training_script_name \
     + " --data ${{inputs.data}}" \
     + " --test_train_ratio ${{inputs.test_train_ratio}}" \
     + " --learning_rate ${{inputs.learning_rate}}" \
-    + " --registered_model_name ${{inputs.registered_model_name}}"
+    + " --registered_model_name ${{inputs.registered_model_name}}" \
+    + " --key_vault_url ${{inputs.key_vault_url}}"
 
 
 #%%

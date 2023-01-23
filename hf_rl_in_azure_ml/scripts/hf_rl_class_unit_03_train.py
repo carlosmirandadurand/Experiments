@@ -16,6 +16,8 @@ from azure.keyvault.secrets import SecretClient
 import torch
 import tensorflow as tf
 import huggingface_hub as hf
+from huggingface_hub import list_models
+from huggingface_hub import hf_hub_download
 
 
  # Helper Functions
@@ -44,6 +46,7 @@ def train():
     parser.add_argument("--n_estimators", required=False, default=100, type=int)
     parser.add_argument("--learning_rate", required=False, default=0.1, type=float)
     parser.add_argument("--registered_model_name", type=str, help="model name")
+    parser.add_argument("--key_vault_url", type=str, help="key vault URL")
     args = parser.parse_args()
 
     # Show parametrs
@@ -51,6 +54,22 @@ def train():
     log_item("SCRIPT PARAMETERS:")
     log_item("\n".join(f"{k} = {v}" for k, v in vars(args).items()))
 
+    # Configure
+    log_os_command("INITIALIZE GIT", 'git config --global credential.helper store')
+
+    # Load credentials from Azure Identity and Connect to HF
+    log_title("CONNECTING TO HUGING FACE...")    
+    aml_credential = DefaultAzureCredential()
+    aml_secret_client = SecretClient(vault_url = args.key_vault_url, credential = aml_credential)
+    hf_access_token = aml_secret_client.get_secret("hf-access-token")
+    hf_access_token = hf_access_token.value
+    log_item("Hugging Face Access Token", hf_access_token[-2:])
+    hf.login(token = hf_access_token, add_to_git_credential = True)
+    log_item("Hugging Face login complete...")
+    hf_models = list_models()
+    hf_hub_download(repo_id="carlosmirandad/rl-class-q-taxi-v3", filename="replay.mp4")
+    log_item("Hugging Face pre-checks complete...")
+ 
     # Record environment
     log_os_command("OPERATING SYSTEM", 'cat /etc/*-release')
     log_os_command("HARDWARE: CPU",    'cat /proc/cpuinfo')
@@ -91,14 +110,11 @@ def train():
 
 
     # Train & evaluate the agent
-    log_os_command("TRAIN AGENT",    "python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/ ")
-    log_os_command("VALIDATE AGENT", "python enjoy.py --algo dqn --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/ ")
+    log_os_command("TRAIN RL AGENT",    "python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/ ")
+    log_os_command("VALIDATE RL AGENT", "python enjoy.py --algo dqn --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/ ")
     
-    # # Log to Hugging Face account to be able to upload models to the Hub.
-    # credential = DefaultAzureCredential()
-    # secret_client = SecretClient(vault_url="https://my-key-vault.vault.azure.net/", credential=credential)
-    # hf.login(token = z, add_to_git_credential = True)
-    # log_os_command("PUBLICH AGENT", "python -m rl_zoo3.push_to_hub --algo dqn --env SpaceInvadersNoFrameskip-v4 --repo-name rl-class-dqn-SpaceInvadersNoFrameskip-v4 -orga carlosmirandad -f logs/ ")
+    # Upload model to Hugging Face Hub.
+    log_os_command("PUBLISH RL AGENT", "python -m rl_zoo3.push_to_hub --algo dqn --env SpaceInvadersNoFrameskip-v4 --repo-name rl-class-dqn-SpaceInvadersNoFrameskip-v4 -orga carlosmirandad -f logs/ ")
  
     # End of training
     log_title("TRAINING SCRIPT... END!")
