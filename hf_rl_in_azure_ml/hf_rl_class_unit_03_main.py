@@ -6,6 +6,8 @@
 
 #%%
 import os
+import time
+from datetime import datetime
 from dotenv import load_dotenv
 import uuid
 
@@ -16,6 +18,8 @@ from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, Model
+
+
 
 
 
@@ -102,7 +106,7 @@ print(f"Environment with name {pipeline_job_env.name} is registered to workspace
 
 # Execute....
 print(f"Run training command {command}...")
-training_job = command(
+training_job_command = command(
         inputs = training_input_parameters,
         code = training_script_folder, 
         command = training_command,
@@ -112,8 +116,21 @@ training_job = command(
         display_name = aml_command_display_name,
     )
 
-ml_client.create_or_update(training_job)
-print('Training command complete!')
+training_job_resource = ml_client.create_or_update(training_job_command)
+print(f'Training command created. Job {training_job_resource.name} is {training_job_resource.status}...')
+
+
+#%%
+
+# Check progress until job has finished running....
+while True:
+    job_status = ml_client.jobs.get(training_job_resource.name).status
+    if job_status not in ['Provisioning', 'Queued', 'Preparing', 'Starting', 'Running', 'Finalizing']:
+        break
+    print(f"Training Job Status: {job_status}")
+    time.sleep(30)
+
+print(f"Training Job FINAL STATUS: {ml_client.jobs.get(training_job_resource.name).status}")
 
 
 #%%

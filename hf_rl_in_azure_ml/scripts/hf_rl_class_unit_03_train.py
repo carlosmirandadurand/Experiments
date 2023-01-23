@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import argparse
 import pandas as pd
 import mlflow
@@ -11,6 +12,23 @@ import torch
 import tensorflow as tf
 
 
+
+ # Helper Functions
+def log_title(*args):
+    print('-'*10, "LOG :", datetime.now(), ":", " / ".join(args), '-'*10, flush=True)
+
+def log_item(*args):
+    print("\t".join(args), flush=True)
+
+def log_os_command(command_title, cmd):
+    log_item("-" * 80)
+    log_title(command_title)
+    log_item(cmd)
+    os.system(cmd)
+    log_item("-" * 80, "\n")
+
+
+# Main training function
 def train():
     """Main function of the training script."""
 
@@ -24,20 +42,27 @@ def train():
     args = parser.parse_args()
 
     # Show parametrs
-    print("TRAINING SCRIPT... START!")
-    print(" ".join(f"{k}={v}" for k, v in vars(args).items()))
+    log_title("TRAINING SCRIPT... START!")
+    log_title("SCRIPT PARAMETERS")
+    log_item("\n".join(f"{k} = {v}" for k, v in vars(args).items()))
 
+    # Record environment
+    log_os_command("OPERATING SYSTEM", 'cat /etc/*-release')
+    log_os_command("HARDWARE: CPU",    'cat /proc/cpuinfo')
+    log_os_command("HARDWARE: GPU",    'nvidia-smi')
+    log_os_command("PROCESSES",        'ps -aux')
 
-    #     # Show environment
-    #     !cat /etc/*-release
-    #     !cat /proc/cpuinfo
-    #     !nvidia-smi
-    #     !whoami
-    #     !python --version
-    #     !pip freeze > requirements_first_layer.txt
-    #     !apt list --installed | sed s/Listing...// | awk -F "/" '{print $1}' > apt_installed_packages_first_later.txt
-    #     print(torch.__version__)
-    #     print(tf.__version__)
+    log_os_command("VERSIONS",         'python --version')
+    log_item("PyTorch ", torch.__version__)
+    log_item("TensorFlow ", tf.__version__, "\n")
+
+    log_os_command("PIP FREEZE SNAPHOT", 'pip freeze > snapshot_requirements.txt && cat snapshot_requirements.txt')
+    log_os_command("APT LIST SNAPHOT",   "apt list --installed | sed s/Listing...// | awk -F '/' '{print $1}' > snapshot_apt_installed_packages.txt && cat snapshot_apt_installed_packages.txt")
+
+    log_os_command("USER",               'whoami')
+    log_os_command("CURRENT DIRECORY",   'pwd')
+    log_os_command("DIRECORY CONTENTS",  'ls -alR')
+    log_os_command("ALL PYTHON FILES",   'find / -name *.py')
 
 
     #     # Virtual display
@@ -60,7 +85,7 @@ def train():
     #     !python -m rl_zoo3.push_to_hub  --algo dqn  --env SpaceInvadersNoFrameskip-v4  --repo-name dqn-SpaceInvadersNoFrameskip-v4  -orga ThomasSimonini  -f logs/
 
     # End of training
-    print("TRAINING SCRIPT... END!")
+    log_title("TRAINING SCRIPT... END!")
 
 
 if __name__ == "__main__":
