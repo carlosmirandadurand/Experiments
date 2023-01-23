@@ -133,12 +133,18 @@ print(f'Training command created. Job {training_job_resource.name} is {training_
 #%%
 
 # Check progress until job has finished running....
+i = 0
 while True:
     job_status = ml_client.jobs.get(training_job_resource.name).status
     if job_status not in ['Provisioning', 'Queued', 'Preparing', 'Starting', 'Running', 'Finalizing']:
+        print(f"Exit Condition Met {i}: {job_status}")
         break
-    print(f"Training Job Status: {job_status}")
-    time.sleep(30)
+    print(f"Training Job Status {i}: {job_status}")
+    time.sleep(60)
+    i = i + 1
+    if i > 24*60*2:
+        print(f"Timeout Condition")
+        break 
 
 print(f"Training Job FINAL STATUS: {ml_client.jobs.get(training_job_resource.name).status}")
 
