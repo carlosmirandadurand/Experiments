@@ -20,9 +20,6 @@ from azure.ai.ml.entities import ComputeInstance, AmlCompute
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, Model
 
 
-
-
-
 #%%
 
 # Load Azure ML parameters from environment variables
@@ -40,7 +37,7 @@ print("Loaded process paramenetrs from environment file.")
 
 #%%
 
-aml_command_display_name = "HF RL Course - Unit 03 - Training Job"
+aml_command_display_name = f"HF RL Course - Unit 03 - Training Job {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 aml_experiment_name = 'hf_rl_class_unit_03_experiment'
 aml_model_name = "hf_rl_class_unit_03_model" 
 
@@ -144,3 +141,4 @@ if ml_compute_instance.state == "Running":
 
 
 print("END!")
+
