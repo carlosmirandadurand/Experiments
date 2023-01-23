@@ -1,17 +1,21 @@
 import os
 import time
-from datetime import datetime
 import argparse
 import pandas as pd
-import mlflow
-import mlflow.sklearn
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
+
+from datetime import datetime
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+
+# import mlflow
+# import mlflow.sklearn
+# from sklearn.ensemble import GradientBoostingClassifier
+# from sklearn.metrics import classification_report
+# from sklearn.model_selection import train_test_split
 
 import torch
 import tensorflow as tf
-
+import huggingface_hub as hf
 
 
  # Helper Functions
@@ -51,6 +55,9 @@ def train():
     log_os_command("OPERATING SYSTEM", 'cat /etc/*-release')
     log_os_command("HARDWARE: CPU",    'cat /proc/cpuinfo')
     log_os_command("HARDWARE: GPU",    'nvidia-smi')
+    log_os_command("ALIASES",          'alias')
+    log_os_command("USER",             'whoami')
+    log_item("CURRENT DIRECTORY ",  os.getcwd(), "\n")
 
     log_os_command("VERSIONS",         'python --version')
     log_item("PyTorch ", torch.__version__)
@@ -59,53 +66,40 @@ def train():
     log_os_command("PROCESSES",          'ps -aux')
     log_os_command("PIP FREEZE SNAPHOT", 'pip freeze > snapshot_requirements.txt && cat snapshot_requirements.txt')
     log_os_command("APT LIST SNAPHOT",   "apt list --installed | sed s/Listing...// | awk -F '/' '{print $1}' > snapshot_apt_installed_packages.txt && cat snapshot_apt_installed_packages.txt")
-
-    log_os_command("USER",               'whoami')
-    log_os_command("CURRENT DIRECTORY",  'pwd')
-    log_item("CURRENT DIRECTORY ",  os.getcwd(), "\n")
-    log_os_command("DIRECTORY CONTENTS", 'ls -alR')
-    log_os_command("Workspace CONTENTS", 'ls -alR /workspace')
-    log_os_command("ALL PYTHON FILES",   'find / -name *.py')
-    log_os_command("ALL YAML FILES",     'find / -name *.yml')
+    log_os_command("ROOT DIRECTORY CONTENTS",           'ls -al /')
+    log_os_command("CURRENT DIRECTORY FULL CONTENTS",   'ls -alR')
     
+    # Load RL libraries
+    log_os_command("CLONE STABLE BASELINES 3 ZOO", "git clone https://github.com/DLR-RM/rl-baselines3-zoo")
+    log_os_command("CURRENT DIRECTORY FULL CONTENTS",   'ls -alR')
+    # !pip install -r requirements.txt already in the image
 
 
+    # Modify RL parameters
+    log_title("UPDATING JOB PARAMETERS")
+    os.chdir( os.path.join(os.getcwd(), "rl-baselines3-zoo")  )
+    log_os_command("CURRENT DIRECTORY",               "pwd")
+    log_os_command("PRINT ORIGINAL DQN PARAMETERS",  "cat ./hyperparams/dqn.yml")
+    log_os_command("UPDATE DQN PARAMETERS",          "cp ../dqn_modified.yml ./hyperparams/dqn.yml")
+    log_os_command("PRINT MODIFIED DQN PARAMETERS",  "cat ./hyperparams/dqn.yml")
 
-    # Virtual display
+    # Initialize virtual display
     log_title("Virtual display")
     from pyvirtualdisplay import Display
     virtual_display = Display(visible=0, size=(1400, 900))
     virtual_display.start()
 
-    # Load RL programs
-    log_os_command("CLONE STABLE BASELINES 3 ZOO", "git clone https://github.com/DLR-RM/rl-baselines3-zoo")
-    time.sleep(62)
 
-    # Check RL loaded programs
-    log_os_command("ALL YAML FILES (AFTER)",       'find / -name *.yml')
-    log_os_command("ALL PYTHON FILES (AFTER)",     'find / -name *.py')
-    os.chdir( os.path.join(os.getcwd(), "rl-baselines3-zoo")  )
-    log_os_command("CURRENT DIRECTORY",        "pwd")
-    log_item("CURRENT DIRECTORY ",  os.getcwd(), "\n")
-    log_os_command("PRINT DQN PARAMETERS",     "cat ./hyperparams/dqn.yml")
-    log_os_command("DIRECTORY CONTENTS",       'ls -alR')
-
-
-
-
-
-    #     # Train the agent
-    #    !python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/
-
-    #     # Evaluate agent
-    #     !python enjoy.py  --algo dqn  --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/
-
-    #     # Publish agent
-    #     from huggingface_hub import notebook_login # To log to our Hugging Face account to be able to upload models to the Hub.
-    #     notebook_login()
-    #     !git config --global credential.helper store
-    #     !python -m rl_zoo3.push_to_hub  --algo dqn  --env SpaceInvadersNoFrameskip-v4  --repo-name dqn-SpaceInvadersNoFrameskip-v4  -orga ThomasSimonini  -f logs/
-
+    # Train & evaluate the agent
+    log_os_command("TRAIN AGENT",    "python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/ ")
+    log_os_command("VALIDATE AGENT", "python enjoy.py --algo dqn --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/ ")
+    
+    # # Log to Hugging Face account to be able to upload models to the Hub.
+    # credential = DefaultAzureCredential()
+    # secret_client = SecretClient(vault_url="https://my-key-vault.vault.azure.net/", credential=credential)
+    # hf.login(token = z, add_to_git_credential = True)
+    # log_os_command("PUBLICH AGENT", "python -m rl_zoo3.push_to_hub --algo dqn --env SpaceInvadersNoFrameskip-v4 --repo-name rl-class-dqn-SpaceInvadersNoFrameskip-v4 -orga carlosmirandad -f logs/ ")
+ 
     # End of training
     log_title("TRAINING SCRIPT... END!")
 

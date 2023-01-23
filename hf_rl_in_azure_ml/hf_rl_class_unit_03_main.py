@@ -31,6 +31,7 @@ aml_workspace_name = os.getenv('aml_workspace_name')
 aml_compute_name = os.getenv('aml_compute_name_gpu')
 aml_environment_name = os.getenv('aml_environment_name_rl')
 aml_environment_label = os.getenv('aml_environment_label_rl')
+hf_access_token = os.getenv('hf_access_token')
 
 print("Loaded process paramenetrs from environment file.")
 
