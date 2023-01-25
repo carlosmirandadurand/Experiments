@@ -13,7 +13,7 @@ import uuid
 
 from azure.ai.ml import MLClient
 from azure.ai.ml import command
-from azure.ai.ml import Input
+from azure.ai.ml import Input, Output
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
@@ -24,8 +24,8 @@ from azure.keyvault.secrets import SecretClient
 
 
 #%%
-
 # Load Azure ML parameters from environment variables
+
 load_dotenv()
 
 aml_subscription_id = os.getenv('aml_subscription_id')
@@ -37,16 +37,20 @@ aml_environment_label = os.getenv('aml_environment_label_rl')
 aml_key_vault_url = os.getenv('aml_key_vault_url')
 hf_access_token = os.getenv('hf_access_token')
 
-# Load credentials from Azure Identity
-aml_credential = DefaultAzureCredential()
-aml_secret_client = SecretClient(vault_url = aml_key_vault_url, credential = aml_credential)
-#aml_secret_client.set_secret("hf-access-token", hf_access_token) # Uncomment when the secret changes
-
 print("Loaded process paramenetrs from environment file.")
 
+#%%
+# Securely store Hugging Face access token 
+
+aml_credential = DefaultAzureCredential()
+aml_secret_client = SecretClient(vault_url = aml_key_vault_url, credential = aml_credential)
+#aml_secret_client.set_secret("hf-access-token", hf_access_token)  # Uncomment when the secret changes
+
+print("Handled Hugging Face access token.")
 
 
 #%%
+# Set input / output parameters for the training job (largely unused / illustrative only)
 
 aml_command_display_name = f"HF RL Course - Unit 03 - Training Job {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 aml_experiment_name = 'hf_rl_class_unit_03_experiment'
@@ -68,17 +72,14 @@ training_input_parameters = dict(
         key_vault_url = aml_key_vault_url,
     )
 
-training_command = "python " + training_script_name \
-    + " --data ${{inputs.data}}" \
-    + " --test_train_ratio ${{inputs.test_train_ratio}}" \
-    + " --learning_rate ${{inputs.learning_rate}}" \
-    + " --registered_model_name ${{inputs.registered_model_name}}" \
-    + " --key_vault_url ${{inputs.key_vault_url}}"
+training_output_parameters = dict(
+    model_output = Output(type="uri_folder", mode="rw_mount"),
+    )
+
 
 
 #%%
-
-# List the available compute nodes and environments (both curated and custom) in the Azure ML Service worspace 
+# Get workspace handle. List available compute nodes and custom environments (not curated) in the Azure ML Service worspace 
 
 ml_client = MLClient(
     DefaultAzureCredential(), aml_subscription_id, aml_resource_group_name, aml_workspace_name
@@ -88,12 +89,13 @@ for i in ml_client.compute.list():
     print("Compute:", i.name)
 
 for i in ml_client.environments.list():
-    print("Environment:", i.name)
+    if "AzureML-" not in i.name:
+        print("Environment:", i.name)
 
 
 #%%
-
 # Get handle to the GPU compute instance 
+
 ml_compute_instance = ml_client.compute.get(aml_compute_name)
 print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}, size:{ml_compute_instance.size}.")
 
@@ -105,20 +107,31 @@ if ml_compute_instance.state == "Stopped":
 
 
 # %%
-
 # Get handle to the python environment environment 
+
 pipeline_job_env = ml_client.environments.get(aml_environment_name, label=aml_environment_label)
 print(f"Environment with name {pipeline_job_env.name} is registered to workspace, the version is {pipeline_job_env.version}")
 
 
 
 #%%
+# Execute!!! launch the remote training job...
 
-# Execute....
-print(f"Run training command {command}...")
+print(f"Run training command...")
+
+training_command = "python " + training_script_name \
+    + " --data ${{inputs.data}}" \
+    + " --test_train_ratio ${{inputs.test_train_ratio}}" \
+    + " --learning_rate ${{inputs.learning_rate}}" \
+    + " --registered_model_name ${{inputs.registered_model_name}}" \
+    + " --model_output ${{outputs.model_output}}" \
+    + " --key_vault_url ${{inputs.key_vault_url}}"
+
+
 training_job_command = command(
         inputs = training_input_parameters,
         code = training_script_folder, 
+        outputs = training_output_parameters,
         command = training_command,
         environment = f"{pipeline_job_env.name}:{pipeline_job_env.version}",
         compute = aml_compute_name,
@@ -129,10 +142,13 @@ training_job_command = command(
 training_job_resource = ml_client.create_or_update(training_job_command)
 print(f'Training command created. Job {training_job_resource.name} is {training_job_resource.status}...')
 
+training_job_url = training_job_resource.services["Studio"].endpoint
+print(f'URL for the status of the training job {training_job_url}  ')
+
 
 #%%
-
 # Check progress until job has finished running....
+
 i = 0
 while True:
     job_status = ml_client.jobs.get(training_job_resource.name).status
@@ -142,7 +158,7 @@ while True:
     print(f"Training Job Status {i}: {job_status}")
     time.sleep(60)
     i = i + 1
-    if i > 24*60*2:
+    if i > 60*24*2:
         print(f"Timeout Condition")
         break 
 
@@ -150,8 +166,8 @@ print(f"Training Job FINAL STATUS: {ml_client.jobs.get(training_job_resource.nam
 
 
 #%%
-
 # END!  Stop the compute instance when the script is over. 
+
 if ml_compute_instance.state == "Running":
     print("Stopping GPU compute instance...")
     ml_client.compute.begin_stop(aml_compute_name).wait()
