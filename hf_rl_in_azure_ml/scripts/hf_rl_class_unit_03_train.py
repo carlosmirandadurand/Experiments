@@ -1,5 +1,5 @@
 import os
-import time
+import shutil
 import argparse
 import pandas as pd
 
@@ -52,8 +52,9 @@ def train():
     parser.add_argument("--n_estimators", required=False, default=100, type=int)
     parser.add_argument("--learning_rate", required=False, default=0.1, type=float)
     parser.add_argument("--registered_model_name", type=str, help="model name")
-    parser.add_argument("--model_output ", type=str, help="Path of output model")
+    parser.add_argument("--job_timestamp", type=str, help="timestamp to identify the job in output and UI")
     parser.add_argument("--key_vault_url", type=str, help="key vault URL")
+    parser.add_argument("--model_output", type=str, help="Path of output model")
     args = parser.parse_args()
 
     # Show parametrs
@@ -61,12 +62,22 @@ def train():
     log_item("SCRIPT PARAMETERS:")
     log_item("\n".join(f"{k} = {v}" for k, v in vars(args).items()))
 
-    # Configure
-    log_os_command("INITIALIZE GIT", 'git config --global credential.helper store')
 
+    # Install git-lfs
+    # log_os_command("INSTALL GIT-LFS", "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.python.sh | bash")
+    # log_os_command("CHECK PIP CONFIG:", "cat $HOME/.pip/pip.conf")
+    log_os_command("EXTRACT:", "cd downloads/ && tar -xf git-lfs-linux-amd64-v3.3.0.tar.gz && cd git-lfs-3.3.0 && ./install.sh && cd ../.. && pwd && echo GIT_LFS Installed")
+    
     # Load RL libraries
     log_os_command("CLONE STABLE BASELINES 3 ZOO", "git clone https://github.com/DLR-RM/rl-baselines3-zoo")
-    # !pip install -r requirements.txt   # not needed - packages were installed when creating the custom python environment
+    # pip install -r requirements.txt   # not needed - packages were installed when creating the custom python environment
+
+    # # Update library - may be solution to warning 
+    # log_os_command("CHECK PIP CONFIG:", "pip3 install --upgrade requests")   
+
+    # Configure
+    log_os_command("INITIALIZE GIT",     'git config --global credential.helper store')
+    log_os_command("INITIALIZE GIT-LFS", 'git lfs install')
 
     # Load credentials from Azure Identity and Connect to HF
     log_title("CONNECTING TO HUGING FACE...")    
@@ -99,9 +110,8 @@ def train():
     log_os_command("PIP FREEZE SNAPHOT", 'pip freeze > snapshot_requirements.txt && cat snapshot_requirements.txt')
     log_os_command("APT LIST SNAPHOT",   "apt list --installed | sed s/Listing...// | awk -F '/' '{print $1}' > snapshot_apt_installed_packages.txt && cat snapshot_apt_installed_packages.txt")
 
-    log_os_command("ROOT DIRECTORY CONTENTS",          'ls -al /')    
-    log_os_command("INPUT DIRECTORY FULL CONTENTS",    f"ls -alR {os.path.join(args.data)} ")
-    log_os_command("OUTPUT DIRECTORY FULL CONTENTS",   f"ls -alR {os.path.join(args.model_output)} ")
+    log_os_command("ROOT DIRECTORY CONTENTS",          'ls -al /') 
+    log_os_command("AML MOUNTS FULL CONTENTS",         'ls -alR /mnt/azureml/ ') 
     log_os_command("CURRENT DIRECTORY FULL CONTENTS",  'ls -alR')
     
     # Modify RL parameters
@@ -117,31 +127,23 @@ def train():
     virtual_display = Display(visible=0, size=(1400, 900))
     virtual_display.start()
 
-    # Train the agent
-    log_os_command("TRAIN RL AGENT",         "python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/ ")
-    log_os_command("OUTPUT FULL CONTENTS",   'ls -alR logs/dqn/ ')
-
-    # Evaluate the agent
-    log_os_command("VALIDATE RL AGENT",        "python enjoy.py --algo dqn --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/ ")
-    log_os_command("OUTPUT FULL CONTENTS (2)", 'ls -alR logs/dqn/ ')
+    # Train and evaluate the agent
+    model_output_subdirectory = "logs/dqn/"
+    log_os_command("TRAIN RL AGENT",    "python train.py --algo dqn --env SpaceInvadersNoFrameskip-v4  -f logs/ ")
+    log_os_command("VALIDATE RL AGENT", "python enjoy.py --algo dqn --env SpaceInvadersNoFrameskip-v4  --no-render  --n-timesteps 5000  --folder logs/ ")
+    log_os_command("LOCAL OUTPUT FULL CONTENTS", f"ls -alR {model_output_subdirectory} ")
     
-    # # Save model output
-    # output_time = datetime.now()
-    # output_file_name = f"results_{output_time.strftime('%Y%m%d_%H%M%S')}.txt"
-    # output_file_name = os.path.join(args.model_output, output_file_name)
-    # output_file_content = f"Results generated at: {output_time.strftime('%b-%d-%Y %H:%M:%S')}\n"
-    # output_file_command1 = f"cp logs/ {os.path.join(args.model_output)}"
-    # output_file_command2 = f"ls -al {os.path.join(args.model_output)}"
-    # log_item("output_file_name", output_file_name)
-    # log_item("output_file_content", output_file_content)
-    # log_item("output_file_command1", output_file_command1)
-    # log_item("output_file_command2", output_file_command2)
-    # (Path(args.model_output) / output_file_name).write_text(output_file_content)
-    # log_os_command("COPY OUTPUTS",  output_file_command1)
-    # log_os_command("LIST OUTPUTS",  output_file_command2)
+    # Save model output
+    model_output_external_path = os.path.join(
+        args.model_output, 
+        f"output_{args.registered_model_name}_{args.job_timestamp}",
+        model_output_subdirectory)
+    log_item("Saving model outputs to path:", model_output_external_path)
+    shutil.copytree(model_output_subdirectory, model_output_external_path)
+    log_os_command("EXTERNAL OUTPUT FULL CONTENTS", f"ls -alR {model_output_external_path} ")
 
-    # # Upload model to Hugging Face Hub.
-    # log_os_command("PUBLISH RL AGENT", "python -m rl_zoo3.push_to_hub --algo dqn --env SpaceInvadersNoFrameskip-v4 --repo-name rl-class-dqn-SpaceInvadersNoFrameskip-v4 -orga carlosmirandad -f logs/ ")
+    # Upload model to Hugging Face Hub.
+    log_os_command("PUBLISH RL AGENT", "python -m rl_zoo3.push_to_hub --algo dqn --env SpaceInvadersNoFrameskip-v4 --repo-name rl-class-dqn-SpaceInvadersNoFrameskip-v4 -orga carlosmirandad -f logs/ ")
 
     # End of training
     log_title("TRAINING SCRIPT... END!")

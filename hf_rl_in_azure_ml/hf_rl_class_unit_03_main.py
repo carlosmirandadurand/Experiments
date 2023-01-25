@@ -14,10 +14,10 @@ import uuid
 from azure.ai.ml import MLClient
 from azure.ai.ml import command
 from azure.ai.ml import Input, Output
-from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Environment, BuildContext
 from azure.ai.ml.entities import ComputeInstance, AmlCompute
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, Model
+from azure.ai.ml.constants import AssetTypes
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
@@ -39,6 +39,7 @@ hf_access_token = os.getenv('hf_access_token')
 
 print("Loaded process paramenetrs from environment file.")
 
+
 #%%
 # Securely store Hugging Face access token 
 
@@ -52,7 +53,9 @@ print("Handled Hugging Face access token.")
 #%%
 # Set input / output parameters for the training job (largely unused / illustrative only)
 
-aml_command_display_name = f"HF RL Course - Unit 03 - Training Job {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+job_timestamp = datetime.now()
+
+aml_command_display_name = f"HF RL Course - Unit 03 - Training Job {job_timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 aml_experiment_name = 'hf_rl_class_unit_03_experiment'
 aml_model_name = "hf_rl_class_unit_03_model" 
 
@@ -70,10 +73,14 @@ training_input_parameters = dict(
         learning_rate = 0.25,
         registered_model_name = aml_model_name,
         key_vault_url = aml_key_vault_url,
+        job_timestamp = job_timestamp.strftime('%Y%m%d_%H%M%S'),
     )
 
 training_output_parameters = dict(
-    model_output = Output(type="uri_folder", mode="rw_mount"),
+    model_output = Output(
+        type=AssetTypes.URI_FOLDER,
+        path=f"azureml://subscriptions/{aml_subscription_id}/resourcegroups/{aml_resource_group_name}/workspaces/{aml_workspace_name}/datastores/workspaceblobstore/paths/",
+        )
     )
 
 
@@ -124,14 +131,15 @@ training_command = "python " + training_script_name \
     + " --test_train_ratio ${{inputs.test_train_ratio}}" \
     + " --learning_rate ${{inputs.learning_rate}}" \
     + " --registered_model_name ${{inputs.registered_model_name}}" \
-    + " --model_output ${{outputs.model_output}}" \
-    + " --key_vault_url ${{inputs.key_vault_url}}"
-
+    + " --job_timestamp ${{inputs.job_timestamp}}" \
+    + " --key_vault_url ${{inputs.key_vault_url}}" \
+    + " --model_output ${{outputs.model_output}}" 
+    
 
 training_job_command = command(
         inputs = training_input_parameters,
-        code = training_script_folder, 
         outputs = training_output_parameters,
+        code = training_script_folder, 
         command = training_command,
         environment = f"{pipeline_job_env.name}:{pipeline_job_env.version}",
         compute = aml_compute_name,
