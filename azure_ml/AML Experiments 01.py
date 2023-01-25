@@ -1,5 +1,5 @@
 # Testing the Pythion SDK v2 
-# Azure Machine LEarning Service 
+# Azure Machine Learning Service 
 # Source: https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day
 
 
