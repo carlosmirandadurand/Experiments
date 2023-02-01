@@ -28,7 +28,7 @@ from azure.keyvault.secrets import SecretClient
 
 load_dotenv()
 
-aml_subscription_id = os.getenv('aml_subscription_id')
+az_subscription_id = os.getenv('az_subscription_id')
 aml_resource_group_name = os.getenv('aml_resource_group_name')
 aml_workspace_name = os.getenv('aml_workspace_name')
 aml_compute_name = os.getenv('aml_compute_name_gpu')
@@ -79,7 +79,7 @@ training_input_parameters = dict(
 training_output_parameters = dict(
     model_output = Output(
         type=AssetTypes.URI_FOLDER,
-        path=f"azureml://subscriptions/{aml_subscription_id}/resourcegroups/{aml_resource_group_name}/workspaces/{aml_workspace_name}/datastores/workspaceblobstore/paths/",
+        path=f"azureml://subscriptions/{az_subscription_id}/resourcegroups/{aml_resource_group_name}/workspaces/{aml_workspace_name}/datastores/workspaceblobstore/paths/",
         )
     )
 
@@ -89,7 +89,7 @@ training_output_parameters = dict(
 # Get workspace handle. List available compute nodes and custom environments (not curated) in the Azure ML Service worspace 
 
 ml_client = MLClient(
-    DefaultAzureCredential(), aml_subscription_id, aml_resource_group_name, aml_workspace_name
+    DefaultAzureCredential(), az_subscription_id, aml_resource_group_name, aml_workspace_name
 )
 
 for i in ml_client.compute.list():

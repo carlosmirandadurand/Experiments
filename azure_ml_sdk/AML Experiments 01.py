@@ -23,9 +23,9 @@ from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment,
 # Load Azure ML parameters from environment variables
 load_dotenv()
 
-subscription_id = os.getenv('aml_subscription_id')
-resource_group = os.getenv('aml_resource_group')
-workspace = os.getenv('aml_workspace')
+subscription_id = os.getenv('az_subscription_id')
+resource_group = os.getenv('aml_resource_group_name')
+workspace = os.getenv('aml_workspace_name')
 
 
 
