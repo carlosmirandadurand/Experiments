@@ -26,7 +26,7 @@ from huggingface_hub import list_models
 from huggingface_hub import hf_hub_download
 
 
- # Helper Functions
+ # Helper Functions (TODO: replace with the clear console functions)
 def log_title(*args):
     print('-'*10, "LOG :", datetime.now(), ":", " / ".join(args), '-'*10, flush=True)
 
