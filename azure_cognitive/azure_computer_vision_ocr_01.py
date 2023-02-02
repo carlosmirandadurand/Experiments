@@ -8,6 +8,7 @@
 #
 # Reference: https://learn.microsoft.com/en-us/azure/cognitive-services/Computer-vision/quickstarts-sdk/client-library?pivots=programming-language-python&tabs=visual-studio 
 # Requires: pillow azure-cognitiveservices-vision-computervision
+# Additional example: https://github.com/microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Handwriting%20OCR%20API%20Example.ipynb  (TODO: Run it)
 
 
 #%%
@@ -42,14 +43,15 @@ subscription_key = os.getenv('azc_cv_instance_key')
 #%%
 # Configure source image and other process parameters
 
-img_url = "https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/articles/cognitive-services/Computer-vision/Images/readsample.jpg"
-img_scale_percent = 50   # 25, 50, 75, 100, 150, 200
+img_url = "https://github.com/microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Z.jpg?raw=true"
+img_scale_percent = 75   # 25, 50, 75, 100, 150, 200
 img_print_text = True    # True / False
 bbox_color_cycle = cycle([(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), ]) # BGR
 
 # Few test examples. Pick one:
 # img_url = "https://raw.githubusercontent.com/MicrosoftDocs/azure-docs/master/articles/cognitive-services/Computer-vision/Images/readsample.jpg"
 # img_url = "https://www.shaip.com/wp-content/uploads/2020/10/Invoice-Data-Collection.jpg"
+# img_url = "https://github.com/microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Z.jpg?raw=true"
 # TODO: Change process to feed local file, e.g. "/home/carlosm/Pictures/Images_for_OCR/readsample_downloaded.jpg"
 
 
