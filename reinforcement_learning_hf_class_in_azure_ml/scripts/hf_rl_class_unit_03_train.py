@@ -2,13 +2,19 @@ import os
 import shutil
 import argparse
 import pandas as pd
+import torch
+import tensorflow as tf
 
 from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
-
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from pyvirtualdisplay import Display
+    
+import huggingface_hub as hf
+from huggingface_hub import list_models
+from huggingface_hub import hf_hub_download
 
 # import mlflow
 # import mlflow.sklearn
@@ -16,17 +22,12 @@ from azure.keyvault.secrets import SecretClient
 # from sklearn.metrics import classification_report
 # from sklearn.model_selection import train_test_split
 
-from pyvirtualdisplay import Display
-    
-import torch
-import tensorflow as tf
 
-import huggingface_hub as hf
-from huggingface_hub import list_models
-from huggingface_hub import hf_hub_download
-
-
- # Helper Functions (TODO: replace with the clear console functions)
+# Helper Functions 
+# TODO: Replace with the clear console functions later
+#       # Load helper functions from gist 
+#       import requests
+#       exec(requests.get("https://bit.ly/cmd-clear-console-output-latest").text)
 def log_title(*args):
     print('-'*10, "LOG :", datetime.now(), ":", " / ".join(args), '-'*10, flush=True)
 
@@ -46,6 +47,7 @@ def train():
     """Main function of the training script."""
 
     # Get input and output arguments
+    # NOTE: Parameters passed from main largely unused (left for future use.) Currently, the real parameters come from a config file.
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, help="path to input data")
     parser.add_argument("--test_train_ratio", type=float, required=False, default=0.25)
@@ -62,22 +64,14 @@ def train():
     log_item("SCRIPT PARAMETERS:")
     log_item("\n".join(f"{k} = {v}" for k, v in vars(args).items()))
 
-
-    # Install git-lfs
-    # log_os_command("INSTALL GIT-LFS", "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.python.sh | bash")
-    # log_os_command("CHECK PIP CONFIG:", "cat $HOME/.pip/pip.conf")
+    # Install git-lfs (zip file was uploaded with the remote scripts / TODO: install in the Azure custom environment)
     log_os_command("EXTRACT:", "cd downloads/ && tar -xf git-lfs-linux-amd64-v3.3.0.tar.gz && cd git-lfs-3.3.0 && ./install.sh && cd ../.. && pwd && echo GIT_LFS Installed")
+    log_os_command("INITIALIZE GIT",     'git config --global credential.helper store')
+    log_os_command("INITIALIZE GIT-LFS", 'git lfs install')
     
     # Load RL libraries
     log_os_command("CLONE STABLE BASELINES 3 ZOO", "git clone https://github.com/DLR-RM/rl-baselines3-zoo")
     # pip install -r requirements.txt   # not needed - packages were installed when creating the custom python environment
-
-    # # Update library - may be solution to warning 
-    # log_os_command("CHECK PIP CONFIG:", "pip3 install --upgrade requests")   
-
-    # Configure
-    log_os_command("INITIALIZE GIT",     'git config --global credential.helper store')
-    log_os_command("INITIALIZE GIT-LFS", 'git lfs install')
 
     # Load credentials from Azure Identity and Connect to HF
     log_title("CONNECTING TO HUGING FACE...")    

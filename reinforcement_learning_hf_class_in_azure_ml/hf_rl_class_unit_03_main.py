@@ -51,7 +51,8 @@ print("Handled Hugging Face access token.")
 
 
 #%%
-# Set input / output parameters for the training job (largely unused / illustrative only)
+# Set input / output parameters for the training job 
+# NOTE: Parameters passed from main largely unused (left for future use.) Currently, the real parameters come from a config file.
 
 job_timestamp = datetime.now()
 
@@ -64,7 +65,7 @@ training_script_name = "hf_rl_class_unit_03_train.py"
 
 training_data = Input(
         type="uri_file",
-        path="https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls",
+        path="https://huggingface.co/deep-rl-course/unit3/introduction?fw=pt",
     )
 
 training_input_parameters = dict(
