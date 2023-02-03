@@ -19,6 +19,7 @@ from azure.keyvault.secrets import SecretClient
 import imageio
 from pyvirtualdisplay import Display
 
+import tensorflow as tf
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,7 +32,7 @@ from huggingface_hub import HfApi, snapshot_download
 from huggingface_hub.repocard import metadata_eval_result, metadata_save
 
 import gym
-import gym_pygame
+#import gym_pygame
 
 
 # import mlflow
@@ -39,7 +40,6 @@ import gym_pygame
 # from sklearn.ensemble import GradientBoostingClassifier
 # from sklearn.metrics import classification_report
 # from sklearn.model_selection import train_test_split
-
 
 # Load helper functions from gist
 try: 
@@ -54,6 +54,28 @@ try:
 except:
     pass
 
+
+######################## GLOBAL VARIABLES ##########################################################
+
+# Real training parameters are harcoded for now.  Some variables are global for now.  Script parameters most are ignored.  
+# TODO: 
+#    - Pass values via param from the local script
+#    - Remove unsused script parameters
+#    - use optuna for tunning
+#    - Ensure functions are not relying on global variables
+
+# Create the envs
+env_id = "CartPole-v1"
+env      = gym.make(env_id)
+eval_env = gym.make(env_id)
+ 
+# CUDA device, if available
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("GPU check from pytorch", device)
+
+
+
+######################## SCRIPT CLASSES AND FUNCTIONS ##########################################################
 
 class Policy(nn.Module):
     def __init__(self, s_size, a_size, h_size):
@@ -88,7 +110,7 @@ class Policy(nn.Module):
 
 
 
-def reinforce(policy, optimizer, n_training_episodes, max_t, gamma, print_every):
+def reinforce(env, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
     # Help us to calculate the score during the training
     full_scores_deque = deque(maxlen=100)
     full_scores_list = []
@@ -140,53 +162,54 @@ def reinforce(policy, optimizer, n_training_episodes, max_t, gamma, print_every)
 
 
 def evaluate_agent(env, max_steps, n_eval_episodes, policy):
-    """
-    Evaluate the agent for ``n_eval_episodes`` episodes and returns average reward and std of reward.
-    :param env: The evaluation environment
-    :param n_eval_episodes: Number of episode to evaluate the agent
-    :param policy: The Reinforce agent
-    """
-    episode_rewards = []
-    for episode in range(n_eval_episodes):
+  """
+  Evaluate the agent for ``n_eval_episodes`` episodes and returns average reward and std of reward.
+  :param env: The evaluation environment
+  :param n_eval_episodes: Number of episode to evaluate the agent
+  :param policy: The Reinforce agent
+  """
+  episode_rewards = []
+  for episode in range(n_eval_episodes):
     state = env.reset()
     step = 0
     done = False
     total_rewards_ep = 0
-
+    
     for step in range(max_steps):
-        action, _ = policy.act(state)
-        new_state, reward, done, info = env.step(action)
-        total_rewards_ep += reward
+      action, _ = policy.act(state)
+      new_state, reward, done, info = env.step(action)
+      total_rewards_ep += reward
         
-        if done:
+      if done:
         break
-        state = new_state
+      state = new_state
     episode_rewards.append(total_rewards_ep)
-    mean_reward = np.mean(episode_rewards)
-    std_reward = np.std(episode_rewards)
+  mean_reward = np.mean(episode_rewards)
+  std_reward = np.std(episode_rewards)
 
-    return mean_reward, std_reward
+  return mean_reward, std_reward
+
 
 def record_video(env, policy, out_directory, fps=30):
-  """
-  Generate a replay video of the agent
-  :param env
-  :param Qtable: Qtable of our agent
-  :param out_directory
-  :param fps: how many frame per seconds (with taxi-v3 and frozenlake-v1 we use 1)
-  """
-  images = []  
-  done = False
-  state = env.reset()
-  img = env.render(mode='rgb_array')
-  images.append(img)
-  while not done:
-    # Take the action (index) that have the maximum expected future reward given that state
-    action, _ = policy.act(state)
-    state, reward, done, info = env.step(action) # We directly put next_state = state for recording logic
+    """
+    Generate a replay video of the agent
+    :param env
+    :param Qtable: Qtable of our agent
+    :param out_directory
+    :param fps: how many frame per seconds (with taxi-v3 and frozenlake-v1 we use 1)
+    """
+    images = []  
+    done = False
+    state = env.reset()
     img = env.render(mode='rgb_array')
     images.append(img)
-  imageio.mimsave(out_directory, [np.array(img) for i, img in enumerate(images)], fps=fps)
+    while not done:
+        # Take the action (index) that have the maximum expected future reward given that state
+        action, _ = policy.act(state)
+        state, reward, done, info = env.step(action) # We directly put next_state = state for recording logic
+        img = env.render(mode='rgb_array')
+        images.append(img)
+    imageio.mimsave(out_directory, [np.array(img) for i, img in enumerate(images)], fps=fps)
 
 def push_to_hub(repo_id, 
                 model,
@@ -311,9 +334,7 @@ def push_to_hub(repo_id,
 
 
 
-
-
-
+######################## SCRIPT MAIN FUNCTION ##########################################################
 
 def main():
     """Executes the training, that's it."""
@@ -329,18 +350,6 @@ def main():
     parser.add_argument("--model_output", type=str, help="Path of output model")
     args = parser.parse_args()
 
-    # Harcoded for now.  TODO: optimize later.  Pass the param from the local script and use optuna.
-    cartpole_hyperparameters = {
-        "h_size": 16,
-        "n_training_episodes": 5_000,
-        "n_evaluation_episodes": 10,
-        "max_t": 1000,
-        "gamma": 1.0,
-        "lr": 1e-2,
-        "env_id": env_id,
-        "state_space": s_size,
-        "action_space": a_size,
-    }
 
     ############ CHECK THE MACHINE ####################################  
 
@@ -370,8 +379,6 @@ def main():
     clear_console_os_command("OPERATING SYSTEM", 'cat /etc/*-release')
     clear_console_os_command("HARDWARE: CPU",    'cat /proc/cpuinfo')
     clear_console_os_command("HARDWARE: GPU",    'nvidia-smi')
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("GPU check from pytorch", device)
 
     clear_console_os_command("ALIASES",      'alias')
     clear_console_os_command("USER",         'whoami')
@@ -398,10 +405,10 @@ def main():
 
     ############ EXECUTE THE TRAINING ####################################  
 
-    # Create the envs
-    env_id = "CartPole-v1"
-    env      = gym.make(env_id)
-    eval_env = gym.make(env_id)
+    # # Create the envs 
+    # # TODO: Move from global section over here to main
+    # env      = gym.make(env_id)
+    # eval_env = gym.make(env_id)
 
     # Get the state space and action space
     s_size = env.observation_space.shape[0]
@@ -415,12 +422,26 @@ def main():
     print("The Action Space is: ", a_size)
     print("Action Space Sample", env.action_space.sample()) # Take a random action
 
+    # Real training parameters are harcoded for now.  Some variables are global for now.  Script parameters most are ignored.  See TODOs above.
+    cartpole_hyperparameters = {
+        "h_size": 16,
+        "n_training_episodes": 5_000,
+        "n_evaluation_episodes": 10,
+        "max_t": 1000,
+        "gamma": 1.0,
+        "lr": 1e-2,
+        "env_id": env_id,
+        "state_space": s_size,
+        "action_space": a_size,
+    }
+
     # Create policy and place it to the device
     cartpole_policy = Policy(cartpole_hyperparameters["state_space"], cartpole_hyperparameters["action_space"], cartpole_hyperparameters["h_size"]).to(device)
     cartpole_optimizer = optim.Adam(cartpole_policy.parameters(), lr=cartpole_hyperparameters["lr"])
 
     # Train
-    scores = reinforce(cartpole_policy,
+    scores = reinforce(env,
+                    cartpole_policy,
                     cartpole_optimizer,
                     cartpole_hyperparameters["n_training_episodes"], 
                     cartpole_hyperparameters["max_t"],
@@ -442,11 +463,11 @@ def main():
     print(repo_id)
 
     push_to_hub(repo_id,
-                    cartpole_policy, # The model we want to save
-                    cartpole_hyperparameters, # Hyperparameters
-                    eval_env, # Evaluation environment
-                    video_fps=30
-                    )
+                cartpole_policy, # The model we want to save
+                cartpole_hyperparameters, # Hyperparameters
+                eval_env, # Evaluation environment
+                video_fps=30
+                )
 
     # TODO: Persist and register in azure portal, also log the stats with mlflow.
     # # Save model output

@@ -65,7 +65,7 @@ training_script_name = "hf_rl_class_unit_03_train.py"
 
 training_data = Input(
         type="uri_file",
-        path="https://huggingface.co/deep-rl-course/unit3/introduction?fw=pt",
+        path="https://huggingface.co/deep-rl-course/unit3/introduction",
     )
 
 training_input_parameters = dict(

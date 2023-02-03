@@ -1,8 +1,8 @@
 # Hugging Face Reiforcement Lerning Class 
 # Running on Azure Machine Learning Service
-# Unit3: Deep Q-Learning with Atari games 
-# Home Page: https://huggingface.co/deep-rl-course/unit3/introduction?fw=pt
-# Source: https://colab.research.google.com/github/huggingface/deep-rl-class/blob/main/notebooks/unit3/unit3.ipynb
+# Unit4: Policy Gradient with Pytorch - Part A: CartPole-v1 Environment
+# Source: https://huggingface.co/deep-rl-course/unit4/hands-on?fw=pt
+
 
 #%%
 import os
@@ -64,7 +64,7 @@ training_script_name = "hf_rl_class_unit_04a_train.py"
 
 training_data = Input(
         type="uri_file",
-        path="https://huggingface.co/deep-rl-course/unit4/introduction?fw=pt",
+        path="https://huggingface.co/deep-rl-course/unit4/introduction",
     )
 
 training_input_parameters = dict(
@@ -93,11 +93,15 @@ ml_client = MLClient(
 )
 
 for i in ml_client.compute.list():
-    print("Compute:", i.name)
+    print("- Compute:", i.name)
 
 for i in ml_client.environments.list():
     if "AzureML-" not in i.name:
-        print("Environment:", i.name)
+        print(f"> Environment: {i.name} (latest version:{i.latest_version})")
+
+for i in ml_client.environments.list(name=aml_environment_name):
+    print(f">>> Selected environment {i.name} has version : {i.version}")
+
 
 
 #%%
@@ -112,12 +116,21 @@ if ml_compute_instance.state == "Stopped":
     ml_compute_instance = ml_client.compute.get(aml_compute_name)
     print(f"Compute {ml_compute_instance.name}: state:{ml_compute_instance.state}.")
 
+while True:
+    ml_compute_instance = ml_client.compute.get(aml_compute_name)
+    if ml_compute_instance.state == "Running":
+        break
+    time.sleep(20)
+
 
 # %%
 # Get handle to the python environment environment 
 
 pipeline_job_env = ml_client.environments.get(aml_environment_name, label=aml_environment_label)
 print(f"Environment with name {pipeline_job_env.name} is registered to workspace, the version is {pipeline_job_env.version}")
+
+# TODO: Find the SDK v2 method to do this:
+# pipeline_job_env.label(aml_workspace_name, aml_environment_name, version=6, labels=["unit3"])
 
 
 
@@ -185,3 +198,5 @@ if ml_compute_instance.state == "Running":
 
 print("END!")
 
+
+#%%
