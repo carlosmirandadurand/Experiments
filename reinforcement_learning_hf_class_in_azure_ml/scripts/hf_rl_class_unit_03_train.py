@@ -113,7 +113,7 @@ def train():
     os.chdir( os.path.join(os.getcwd(), "rl-baselines3-zoo")  )
     log_os_command("CURRENT DIRECTORY",              "pwd")
     log_os_command("PRINT ORIGINAL DQN PARAMETERS",  "cat ./hyperparams/dqn.yml")
-    log_os_command("UPDATE DQN PARAMETERS",          "cp ../dqn_modified.yml ./hyperparams/dqn.yml")
+    log_os_command("UPDATE DQN PARAMETERS",          "cp ../unit03_dqn_modified.yml ./hyperparams/dqn.yml")
     log_os_command("PRINT MODIFIED DQN PARAMETERS",  "cat ./hyperparams/dqn.yml")
 
     # Initialize virtual display
