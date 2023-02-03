@@ -1,8 +1,15 @@
 
 #%%
-import os
-import datetime
-from clear_console import clear_console_title, clear_console_item, clear_console_os_command
+
+# Load helper functions from gist 
+import requests
+exec(requests.get("https://bit.ly/cmd-clear-console-output-latest").text)
+
+
+# # Load helper functions from local directory
+# import os
+# import datetime
+# from clear_console import clear_console_title, clear_console_item, clear_console_os_command
 
 
 #%%
