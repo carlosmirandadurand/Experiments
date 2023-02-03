@@ -1,10 +1,18 @@
 # Source code for the gist: clear_console_output.py at https://gist.github.com/carlosmirandadurand
-# Installation:
+#
+# Loading in a notebook:
 #   !wget -q bit.ly/cmd-clear-console-output-latest
 #   %run cmd-clear-console-output-latest
+#
+# Loading in a script:
+#   import requests
+#   url = "https://bit.ly/cmd-clear-console-output-latest"
+#   response = requests.get(url)
+#   exec(response.text)
 
 import os
 import datetime
+
 
 def clear_console_title (*args):
     """
