@@ -71,7 +71,7 @@ eval_env = gym.make(env_id)
  
 # CUDA device, if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("GPU check from pytorch", device)
+clear_console_item("GPU check from pytorch", device)
 
 
 
@@ -156,7 +156,7 @@ def reinforce(env, policy, optimizer, n_training_episodes, max_t, gamma, print_e
         optimizer.step()
         
         if i_episode % print_every == 0:
-            print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(full_scores_deque)))
+            clear_console_title('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(full_scores_deque)))
         
     return full_scores_list
 
@@ -329,7 +329,7 @@ def push_to_hub(repo_id,
           path_in_repo=".",
     )
 
-    print(f"Your model is pushed to the Hub. You can view your model here: {repo_url}")
+    clear_console_item(f"Your model is pushed to the Hub. You can view your model here: {repo_url}")
 
 
 
@@ -403,7 +403,8 @@ def main():
     virtual_display = Display(visible=0, size=(1400, 900))
     virtual_display.start()
 
-    ############ EXECUTE THE TRAINING ####################################  
+    ############ EXECUTE THE TRAINING ####################################
+    clear_console_title("TRAINING", "START") 
 
     # # Create the envs 
     # # TODO: Move from global section over here to main
@@ -414,13 +415,13 @@ def main():
     s_size = env.observation_space.shape[0]
     a_size = env.action_space.n
 
-    print("_____OBSERVATION SPACE_____ \n")
-    print("The State Space is: ", s_size)
-    print("Sample observation", env.observation_space.sample()) # Get a random observation
+    clear_console_item("_____OBSERVATION SPACE_____ \n")
+    clear_console_item("The State Space is: ", s_size)
+    clear_console_item("Sample observation", env.observation_space.sample()) # Get a random observation
 
-    print("\n _____ACTION SPACE_____ \n")
-    print("The Action Space is: ", a_size)
-    print("Action Space Sample", env.action_space.sample()) # Take a random action
+    clear_console_item("\n _____ACTION SPACE_____ \n")
+    clear_console_item("The Action Space is: ", a_size)
+    clear_console_item("Action Space Sample", env.action_space.sample()) # Take a random action
 
     # Real training parameters are harcoded for now.  Some variables are global for now.  Script parameters most are ignored.  See TODOs above.
     cartpole_hyperparameters = {
@@ -448,7 +449,8 @@ def main():
                     cartpole_hyperparameters["gamma"], 
                     100)
 
-    ############ EVALUATE MODEL ####################################  
+    ############ EVALUATE MODEL ####################################
+    clear_console_title("EVALUATION", "START") 
         
     evaluate_agent(eval_env, 
                 cartpole_hyperparameters["max_t"], 
@@ -456,11 +458,13 @@ def main():
                 cartpole_policy)    
 
 
-    ############ SAVE THE FINAL MODEL ####################################  
+    ############ PUBLISH THE FINAL MODEL ####################################  
+    clear_console_title("PUBLICATION", "START") 
+
     hf_account_id = "carlosmirandad"
     algo_id = "reinforce"
     repo_id = f"{hf_account_id}/rl-class-{algo_id}-{env_id}" #TODO Define your repo id {username/Reinforce-{model-id}}
-    print(repo_id)
+    clear_console_item(repo_id)
 
     push_to_hub(repo_id,
                 cartpole_policy, # The model we want to save
