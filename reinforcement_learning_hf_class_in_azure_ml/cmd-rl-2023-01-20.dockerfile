@@ -1,4 +1,13 @@
 #####################################################################################################
+# Custom Azure ML Environment cmd-rl-2023-01-20
+#####################################################################################################
+
+# This file is a copy of the docker context stored in the Azure ML workspace
+# Checked in the repo just for reference
+# This commit matches environment cmd-rl-2023-01-20 version 16
+
+
+#####################################################################################################
 # Requirements (Collab Project)
 #####################################################################################################
 
@@ -104,7 +113,24 @@ RUN wget https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-lin
 
 # Essential python packages
 RUN pip install --upgrade pip  && \
-    pip install azureml-mlflow azure-keyvault-secrets azure-identity huggingface_hub 
+    pip install azureml-mlflow \
+                azure-keyvault-secrets \ 
+                azure-identity \ 
+                huggingface_hub \ 
+                gym
+
+# Needed for 4b:  import gym_pygame  
+#    RUN apt-get -y install python-pygame
+#    RUN pip install pygame   
+# Problem:
+#    ==> Unable to locate package python-pygame 
+#    ==> command '/bin/sh -c apt-get -y install python-pygame' returned a non-zero code: 100
+# Read: 
+#   - https://www.pygame.org/wiki/GettingStarted#Pygame%20Installation
+#   - https://pypi.org/project/pygame/
+#   - https://pypi.org/project/gym-games/   or  https://github.com/qlan3/gym-games/blob/master/README.md
+
+
 
 # Add the latest stable build of pythorch 
 # (1.13.1 at the time, requiring cuda 11.7)
@@ -126,8 +152,11 @@ RUN apt-get update -y  && \
     apt-get install -y \
             swig \
             cmake \
-            freeglut3-dev  && \
-    pip install pyglet==1.5.1
+            freeglut3-dev   && \
+    pip install pyglet==1.5.1   && \
+    pip install imageio \ 
+                imageio-ffmpeg
+
 
 # Final step: Install RL Baselines 3 zoo:
 RUN git clone https://github.com/DLR-RM/rl-baselines3-zoo  && \
