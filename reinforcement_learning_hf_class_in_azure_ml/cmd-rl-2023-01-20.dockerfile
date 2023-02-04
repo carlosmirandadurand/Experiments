@@ -4,7 +4,7 @@
 
 # This file is a copy of the docker context stored in the Azure ML workspace
 # Checked in the repo just for reference
-# This commit matches environment cmd-rl-2023-01-20 version 16
+# This commit matches environment cmd-rl-2023-01-20 version 18
 
 
 #####################################################################################################
@@ -54,11 +54,13 @@
 # New Custom Environment
 #####################################################################################################
 
+
 # Base image from NVIDIA with TF preinstalled: TensorFlow Release 22.12
 # https://docs.nvidia.com/deeplearning/frameworks/tensorflow-release-notes/rel-22-12.html#rel-22-12
 # Image specs are ahead of the requirements of the project (CUDA 11.8.0 > 11.2,  2.10.1 > 2.9.2), but let's try...
 # Image requires NVIDIA Driver release 520 or later; 450.51 (or later R450), 470.57 (or later R470), 510.47 (or later R510), or 515.65 (or later R515).
 FROM nvcr.io/nvidia/tensorflow:22.05-tf2-py3
+
 
 # Install Git Large File Storage (git-lfs)
 # References:
@@ -76,21 +78,22 @@ FROM nvcr.io/nvidia/tensorflow:22.05-tf2-py3
 #     git lfs install  && \
 #     echo "CMD: Installation of base machine Complete"
 RUN wget https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-linux-amd64-v3.3.0.tar.gz  && \
+    pwd  && \
     ls -al  && \
-    echo "git-lfs download complete, start unzipping"  && \
+    echo "CMD: git-lfs download complete, start unzipping"  && \
     tar -xf git-lfs-linux-amd64-v3.3.0.tar.gz  && \
     ls -al  && \
     cd git-lfs-3.3.0  && \
     pwd  && \
     ls -al  && \
-    echo "git-lfs unzip complete, start installation"  && \
+    echo "CMD: git-lfs unzip complete, start installation"  && \
     ./install.sh  && \
     cd ..  && \
     pwd  && \
-    echo "git-lfs install complete, start verification" && \  
+    echo "CMD: git-lfs install complete, start verification" && \  
     git config --global credential.helper store  && \  
-    git lfs install  && \
-    echo "git-lfs verification complete"
+    git lfs install  && \ 
+    echo "CMD: git-lfs verification and step complete" 
 
 
 # Commented since the NVIDIA image has the right version of python
@@ -111,6 +114,7 @@ RUN wget https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-lin
 #     ./configure --enable-optimizations && \
 #     make altinstall
 
+
 # Essential python packages
 RUN pip install --upgrade pip  && \
     pip install azureml-mlflow \
@@ -119,25 +123,41 @@ RUN pip install --upgrade pip  && \
                 huggingface_hub \ 
                 gym
 
+
 # Needed for 4b:  import gym_pygame  
-#    RUN apt-get -y install python-pygame
-#    RUN pip install pygame   
-# Problem:
-#    ==> Unable to locate package python-pygame 
-#    ==> command '/bin/sh -c apt-get -y install python-pygame' returned a non-zero code: 100
 # Read: 
 #   - https://www.pygame.org/wiki/GettingStarted#Pygame%20Installation
 #   - https://pypi.org/project/pygame/
 #   - https://pypi.org/project/gym-games/   or  https://github.com/qlan3/gym-games/blob/master/README.md
-
+# For:
+#    RUN apt-get -y install python-pygame
+#    RUN pip install pygame   
+# Error:
+#    ==> Unable to locate package python-pygame 
+#    ==> command '/bin/sh -c apt-get -y install python-pygame' returned a non-zero code: 100
+# For:
+# RUN echo "CMD: installing gym-games "  && \
+#     pip install gym-games  && \
+#     echo "CMD: installing pygame "  && \
+#     pip install pygame  && \
+#     echo "CMD: step complete! "
+# Error:
+#   ==> Could not find a version that satisfies the requirement ple>=0.0.1 (from gym-games)
+RUN echo "CMD: installing pygame "  && \
+    pip install pygame  && \
+    echo "CMD: step complete! "
 
 
 # Add the latest stable build of pythorch 
 # (1.13.1 at the time, requiring cuda 11.7)
 # https://pytorch.org/get-started/locally/ 
-RUN pip3 install torch torchvision torchaudio
+RUN pip3 install torch torchvision torchaudio   && \
+    echo "CMD: Installation of Base Machine Complete!"
+
+
 
 #################### End of the "base machine" image ####################
+
 
 # Now start to add the RL project dependencies 
 # Old: RUN sudo apt-get install -y xvfb xserver-xephyr tigervnc-standalone-server x11-utils gnumeric
@@ -165,6 +185,7 @@ RUN git clone https://github.com/DLR-RM/rl-baselines3-zoo  && \
     cd .. && \
     pwd   && \
     echo "CMD: Installation of RL Packages Complete"
+
 
 #################### End ####################
 
