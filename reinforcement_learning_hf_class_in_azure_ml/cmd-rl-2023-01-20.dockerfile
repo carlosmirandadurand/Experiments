@@ -4,7 +4,7 @@
 
 # This file is a copy of the docker context stored in the Azure ML workspace
 # Checked in the repo just for reference
-# This commit matches environment cmd-rl-2023-01-20 version 18
+# This commit matches environment cmd-rl-2023-01-20 version 19 (which failed / saving just for reference)
 
 
 #####################################################################################################
@@ -121,7 +121,7 @@ RUN pip install --upgrade pip  && \
                 azure-keyvault-secrets \ 
                 azure-identity \ 
                 huggingface_hub \ 
-                gym
+                gym[all]
 
 
 # Needed for 4b:  import gym_pygame  
@@ -143,7 +143,9 @@ RUN pip install --upgrade pip  && \
 #     echo "CMD: step complete! "
 # Error:
 #   ==> Could not find a version that satisfies the requirement ple>=0.0.1 (from gym-games)
-RUN echo "CMD: installing pygame "  && \
+RUN echo "CMD: installing gym-games in another way "  && \
+    pip install git+https://github.com/qlan3/gym-games.git  && \
+    echo "CMD: installing pygame "  && \
     pip install pygame  && \
     echo "CMD: step complete! "
 
