@@ -7,7 +7,7 @@
 # Creation for the record: 
 #   $ conda env create --file ./environments/optimization_gurobi_20230210.yml | tee optimization_gurobi_20230210.output.txt 
 #   $ conda activate optimization_gurobi_20230210
-#   $ conda env export --name ./environments/optimization_gurobi_20230210.lock.yml
+#   $ conda env export | tee ./environments/optimization_gurobi_20230210.lock.yml
 name: optimization_gurobi_20230210
 channels:
   - anaconda
