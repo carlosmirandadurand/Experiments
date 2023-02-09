@@ -1,0 +1,27 @@
+# Conda environment with optimization packages 
+# Platform: linux / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/optimization_gurobi_20230210.lock.yml
+# Use:
+#   $ conda activate optimization_gurobi_20230210
+# Creation for the record: 
+#   $ conda env create --file ./environments/optimization_gurobi_20230210.yml | tee optimization_gurobi_20230210.output.txt 
+#   $ conda activate optimization_gurobi_20230210
+#   $ conda env export --name ./environments/optimization_gurobi_20230210.lock.yml
+name: optimization_gurobi_20230210
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - ipykernel
+  - yfinance
+  - pip:
+    - datetime
+    - gurobipy
+

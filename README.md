@@ -7,6 +7,7 @@ Examples:
 - Azure Cognitive services
 - Hugging Face models and RL course
 - Facebook Prophet forecasting library
+- Gurobi
 - OpenAI GPT
 - More to be added...
 
