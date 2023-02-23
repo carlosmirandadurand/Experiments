@@ -173,4 +173,4 @@ dependencies:
       - yfinance==0.2.12
       - zipp==3.13.0
       - zope-interface==5.5.2
-prefix: C:\Users\CarlosMirandaDurand\miniconda3\envs\azure_datascience_20230216_win
+
