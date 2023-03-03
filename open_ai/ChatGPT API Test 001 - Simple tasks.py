@@ -61,6 +61,24 @@ print('Tokens used:', response.json()['usage'])
 for answer in response.json()['choices']:
     print(answer['message']['role'], ":", answer['message']['content'].strip() )
 
+#%%
+# To call ChatGPT using the python openai library 
+
+import openai
+
+openai.organization = openai_organization_id
+openai.api_key      = openai_organization_key
+
+completion = openai.ChatCompletion.create(
+    model = model,
+    messages=[
+        {"role": "user", "content": prompt},
+    ]
+)
+
+for answer in completion['choices']:
+    print(answer['message']['role'], ":", answer['message']['content'].strip() )
+
 
 
 #%%
@@ -79,4 +97,5 @@ for answer in response.json()['choices']:
 #
 # curl_response = json.loads(os.popen(curl_command).read())
 # curl_response
+#
 
