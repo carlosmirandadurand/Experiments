@@ -1,0 +1,36 @@
+# Conda environment to install DBT CORE in a windows local machine 
+#   - Environment not used when running in DBT CLOUD (not needed for the online development environment)
+#   - Platform: Windows / 64 bits
+#   - More information:
+#       Installation of dbt: https://docs.getdbt.com/docs/get-started/installation
+#       Pip best practices:  https://docs.getdbt.com/faqs/core/install-pip-best-practices.md
+#
+# First Time Use:
+#   $ conda env create --file ./environments/dbt_20230315_win.lock.yml
+#
+# Use:
+#   $ conda activate dbt_20230315_win
+#
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n dbt_20230315_win
+#   $ conda env create --file ./environments/dbt_20230315_win.yml 1> dbt_20230315_win.output.txt 2>&1 
+#   $ conda activate dbt_20230315_win
+#   $ conda env export > ./environments/dbt_20230315_win.lock.yml
+#
+name: dbt_20230315_win
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - pip:
+    - dbt-snowflake
+
+
+
+
+
+
