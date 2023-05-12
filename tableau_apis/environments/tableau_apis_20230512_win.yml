@@ -1,0 +1,43 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/tableau_apis_20230512_win.lock.yml
+# Use:
+#   $ conda activate tableau_apis_20230512_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n tableau_apis_20230512_win
+#   $ conda env create --file ./environments/tableau_apis_20230512_win.yml 1> tableau_apis_20230512_win.output.txt 2>&1 
+#   $ conda activate tableau_apis_20230512_win
+#   $ conda env export > ./environments/tableau_apis_20230512_win.lock.yml
+name: tableau_apis_20230512_win
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - pyodbc
+  - snowflake-connector-python
+  - pip:
+    - git+https://github.com/tableau/document-api-python.git
+    - datetime
+    - python-dotenv
+    - pathlib
+    - argparse
+    - requests
+    - azure-ai-ml
+    - azure-keyvault-secrets
+    - azure-identity
+    - ipykernel
+
+
+
+
+
+
+
