@@ -1,6 +1,8 @@
 
 # Instructions sent to ChatGPT v4:
 
+#--------------------------------------------------------------------------------------------------
+
 # Write a python object-oriented program to simulate the movements of an three-dimensional agent on a flat horizontal surface. 
 
 # The surfacece: 
@@ -35,8 +37,35 @@
 # - Then move the left leg backward 100 cm 
 # - After each one of those moves, the program should report the values of all these parameters: LEFT_X, LEFT_Y, RIGHT_X, RIGHT_Y, AGENT_DIRECTION, LEG_ANGLE
 
+#--------------------------------------------------------------------------------------------------
+
+# Please make the following modifications to the program:
+
+# Printing enhancements:
+# - Move the printing of the agent parameters to a method of the agent named print_parameters().
+# - Please round the coordinate parameters to the nearest centimener and the angles to the nearest degree.   
+
+# Ploting the environment:
+# - Create an function plot_environment_from_top(agent_list, image_file) that receives a list of agent objects and an output file name as paremeters 
+# - The plot_environment_from_top function should render an image of all the agents and of the flat surface as visualized from the top.
+# - The flat surface should be ploted with gray lines
+# - The agents should be plotted each one in a different color 
+# - When an agent is plotted, we should see a 30-75-75-degree triangle designating the position of the center of mass with the 30 degree angle pointing in the direction that the agent is facing.
+# - When an agent is plotted, we should see the position of the left foot desigated with an "L" and the position of the right foot designated with an inverted "L".
+# - When an agent is plotted, we should see line segments connecting the center of mass with the feet. 
+# - After the image is rendered, it should be saved to disk with the filename designated by the 'image_file' parameter
+# - If the path does not exist, the plot_environment_from_top function should create the directories and subdirectories before saving the image.  
+
+# form01 function:
+# - It should call the method print_parameters() after each step in order to produce the desired output.
+# - It should call the function plot_environment_from_top after each step, passing the agent object and a unique filename as a paramater. The filename should be "var/image_nnn" where nnn represents a unique sequential number for each step.
+
+#--------------------------------------------------------------------------------------------------
 
 import math
+import os
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 class AgentOutOfBounds(Exception):
     pass
@@ -83,16 +112,68 @@ class Agent:
         if leg_angle < self.MIN_LEG_ANGLE or leg_angle > self.MAX_LEG_ANGLE:
             raise InvalidLegAngle
 
+    def print_parameters(self):
+        leg_angle = round(math.degrees(math.atan2(abs(self.left_y - self.right_y), abs(self.left_x - self.right_x))))
+        print(f"LEFT_X: {round(self.left_x, 2)}, LEFT_Y: {round(self.left_y, 2)}, RIGHT_X: {round(self.right_x, 2)}, RIGHT_Y: {round(self.right_y, 2)}, AGENT_DIRECTION: {round(self.agent_direction)}, LEG_ANGLE: {leg_angle}")
+
+
+def plot_environment_from_top(agent_list, image_file):
+    fig, ax = plt.subplots()
+
+    # Plot flat surface
+    flat_surface = patches.Rectangle((-Agent.S/2, -Agent.S/2), Agent.S, Agent.S, linewidth=1, edgecolor='grey', facecolor='none')
+    ax.add_patch(flat_surface)
+
+    colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange']  # Different colors for different agents
+
+    for i, agent in enumerate(agent_list):
+        color = colors[i % len(colors)]
+
+        # Plot agent's center of mass
+        center_of_mass_x = (agent.left_x + agent.right_x) / 2
+        center_of_mass_y = (agent.left_y + agent.right_y) / 2
+        plt.plot(center_of_mass_x, center_of_mass_y, 'o', color=color)
+
+        # Plot agent's legs
+        plt.plot([agent.left_x, center_of_mass_x], [agent.left_y, center_of_mass_y], color=color)
+        plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
+
+        # Plot 'L' for left foot and an inverted 'L' for right foot
+        plt.text(agent.left_x, agent.left_y, 'L', fontsize=12, color=color)
+        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=12, color=color)  # Unicode for inverted L
+
+        # Plot triangle representing agent's direction
+        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.5, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
+        ax.add_patch(triangle)
+
+    plt.xlim([-Agent.S/2 - 1, Agent.S/2 + 1])
+    plt.ylim([-Agent.S/2 - 1, Agent.S/2 + 1])
+    plt.gca().set_aspect('equal', adjustable='box')
+
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(image_file), exist_ok=True)
+    
+    # Save the plot
+    plt.savefig(image_file)
+    plt.close()
+
 def form01(agent):
     try:
         agent.move_left_leg(0.5, 0)
-        print(agent.left_x, agent.left_y, agent.right_x, agent.right_y, agent.agent_direction)
+        agent.print_parameters()
+        plot_environment_from_top([agent], 'var/image_001')
+
         agent.move_right_leg(1, 0)
-        print(agent.left_x, agent.left_y, agent.right_x, agent.right_y, agent.agent_direction)
+        agent.print_parameters()
+        plot_environment_from_top([agent], 'var/image_002')
+
         agent.rotate_body(90)
-        print(agent.left_x, agent.left_y, agent.right_x, agent.right_y, agent.agent_direction)
+        agent.print_parameters()
+        plot_environment_from_top([agent], 'var/image_003')
+
         agent.move_left_leg(-1, 0)
-        print(agent.left_x, agent.left_y, agent.right_x, agent.right_y, agent.agent_direction)
+        agent.print_parameters()
+        plot_environment_from_top([agent], 'var/image_004')
     except AgentOutOfBounds:
         print("Agent out of bounds!")
     except InvalidLegAngle:
@@ -104,3 +185,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
