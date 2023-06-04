@@ -69,6 +69,11 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Please make sure that the plot_environment_from_top displays the north at the top of the image, south at the bottom, east on the right, and west on the left.  Actually, please print these labels on alongside each one of the surface boundaries, using gray text, font size 8.
+# ChatGPT: "You're right, we should adjust our plot so that it respects the cardinal directions as you mentioned. Here is the corrected function:"
+
+#--------------------------------------------------------------------------------------------------
+
 
 
 import math
@@ -147,8 +152,8 @@ def plot_environment_from_top(agent_list, image_file):
         plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
 
         # Plot 'L' for left foot and an inverted 'L' for right foot
-        plt.text(agent.left_x, agent.left_y, 'L', fontsize=8, color=color)
-        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=8, color=color)  # Unicode for inverted L
+        plt.text(agent.left_x, agent.left_y, 'L', fontsize=8, color=color, ha='center')
+        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=8, color=color, ha='center')
 
         # Plot triangle representing agent's direction
         triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
@@ -158,12 +163,19 @@ def plot_environment_from_top(agent_list, image_file):
     plt.ylim([-Agent.S/2 - 1, Agent.S/2 + 1])
     plt.gca().set_aspect('equal', adjustable='box')
 
+    # Add cardinal directions
+    plt.text(0, Agent.S/2 + 0.5, 'North', fontsize=8, color='grey', ha='center')
+    plt.text(0, -Agent.S/2 - 0.5, 'South', fontsize=8, color='grey', ha='center')
+    plt.text(Agent.S/2 + 0.5, 0, 'East', fontsize=8, color='grey', va='center')
+    plt.text(-Agent.S/2 - 0.5, 0, 'West', fontsize=8, color='grey', va='center')
+
     # Ensure output directory exists
     os.makedirs(os.path.dirname(image_file), exist_ok=True)
     
     # Save the plot
     plt.savefig(image_file, dpi=300)  # increase dpi for a larger image
     plt.close()
+
 
 
 def form01(agent):
