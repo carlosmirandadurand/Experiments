@@ -74,6 +74,15 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Please write a new version of function plot_environment_from_top with the following changes:
+# - Instead of plotting an L and an inverted L for the feet, please plot two arrows.
+# - The base of each arrow should match exactly the end of the respective leg.   
+# - Both arrows should have length 25 cm and point in the same direction that the agent is facing.
+# - In other words, we should see the triangle and the two feel always pointing in the same direction (in the same direction that the agent is facing.)
+
+# A: You're right. Adding arrows to represent the feet could make the visualization clearer and more aligned with the direction that the agent is facing. Here is the updated function:
+
+#--------------------------------------------------------------------------------------------------
 
 
 import math
@@ -151,9 +160,11 @@ def plot_environment_from_top(agent_list, image_file):
         plt.plot([agent.left_x, center_of_mass_x], [agent.left_y, center_of_mass_y], color=color)
         plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
 
-        # Plot 'L' for left foot and an inverted 'L' for right foot
-        plt.text(agent.left_x, agent.left_y, 'L', fontsize=8, color=color, ha='center')
-        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=8, color=color, ha='center')
+        # Plot arrows for feet
+        dx = 0.25 * math.cos(math.radians(agent.agent_direction))  # Convert direction to radians for trig functions
+        dy = 0.25 * math.sin(math.radians(agent.agent_direction))
+        plt.arrow(agent.left_x, agent.left_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
+        plt.arrow(agent.right_x, agent.right_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
 
         # Plot triangle representing agent's direction
         triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
