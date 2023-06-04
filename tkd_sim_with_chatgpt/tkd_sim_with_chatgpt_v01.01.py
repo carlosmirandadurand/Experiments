@@ -62,6 +62,15 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Please write a new function plot_environment_from_top that prints a larger image (please triple the pixel dimensions of the surface.)  
+# To represent the center of mass, the function should not plot a dot, but only the triangle. 
+# Make the radius of the triangle 10 cm.  
+# Make the font size of the feet smaller so each foot also measures less than 10 cm. 
+
+#--------------------------------------------------------------------------------------------------
+
+
+
 import math
 import os
 import matplotlib.pyplot as plt
@@ -118,7 +127,7 @@ class Agent:
 
 
 def plot_environment_from_top(agent_list, image_file):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 15))
 
     # Plot flat surface
     flat_surface = patches.Rectangle((-Agent.S/2, -Agent.S/2), Agent.S, Agent.S, linewidth=1, edgecolor='grey', facecolor='none')
@@ -132,18 +141,17 @@ def plot_environment_from_top(agent_list, image_file):
         # Plot agent's center of mass
         center_of_mass_x = (agent.left_x + agent.right_x) / 2
         center_of_mass_y = (agent.left_y + agent.right_y) / 2
-        plt.plot(center_of_mass_x, center_of_mass_y, 'o', color=color)
 
         # Plot agent's legs
         plt.plot([agent.left_x, center_of_mass_x], [agent.left_y, center_of_mass_y], color=color)
         plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
 
         # Plot 'L' for left foot and an inverted 'L' for right foot
-        plt.text(agent.left_x, agent.left_y, 'L', fontsize=12, color=color)
-        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=12, color=color)  # Unicode for inverted L
+        plt.text(agent.left_x, agent.left_y, 'L', fontsize=8, color=color)
+        plt.text(agent.right_x, agent.right_y, '\u0315L', fontsize=8, color=color)  # Unicode for inverted L
 
         # Plot triangle representing agent's direction
-        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.5, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
+        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
         ax.add_patch(triangle)
 
     plt.xlim([-Agent.S/2 - 1, Agent.S/2 + 1])
@@ -154,8 +162,9 @@ def plot_environment_from_top(agent_list, image_file):
     os.makedirs(os.path.dirname(image_file), exist_ok=True)
     
     # Save the plot
-    plt.savefig(image_file)
+    plt.savefig(image_file, dpi=300)  # increase dpi for a larger image
     plt.close()
+
 
 def form01(agent):
     try:
