@@ -123,150 +123,116 @@
 
 #--------------------------------------------------------------------------------------------------
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+# No, this program is not correcting the issue.  Lets simplify the requirements.  
+# - Please write this program again without calculating the "angle between the legs" and without using the MIN_LEG_ANGLE & MAX_LEG_ANGLE constraints. 
+# - Please do implement the methods rotate_body(r), move_left_leg(forward_distance, side_distance) and move_right_leg(forward_distance, side_distance) to execute all the movements of the agent across the horizontal flat surface. 
+# - Please make sure that the initial position of the agent is centered, facing south, with legs together. 
+# - The InvalidLegAngle exception would not exist anymore but the "Agent Out Of Bounds" exceptions will
+
+#--------------------------------------------------------------------------------------------------
+
 import os
-import math
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+
 
 class Agent:
-    S = 10  # Side length of the flat surface
-    L = 0.85  # Length of agent's legs
-
-    # Range of possible leg angles
-    MIN_LEG_ANGLE = 0
-    MAX_LEG_ANGLE = 80
+    S = 10
+    L = 0.85
 
     def __init__(self):
-        self.direction = 180  # Initial direction is south
-        self.left_x = -self.L/2
-        self.left_y = 0
-        self.right_x = self.L/2
-        self.right_y = 0
+        self.direction = 180  # facing south
+        self.left_x = self.right_x = self.center_x = 0
+        self.left_y = self.right_y = self.center_y = 0
 
-    def rotate(self, r):
+    def rotate_body(self, r):
         self.direction = (self.direction + r) % 360
 
-    def move_leg(self, forward_distance, side_distance, is_left_leg):
-        # Check for leg angle constraint
-        leg_angle = self.calculate_leg_angle(forward_distance, side_distance)
+    def move_left_leg(self, forward_distance, side_distance):
+        self._move_leg(forward_distance, side_distance, True)
 
-        if leg_angle < self.MIN_LEG_ANGLE or leg_angle > self.MAX_LEG_ANGLE:
-            raise Exception("InvalidLegAngle")
+    def move_right_leg(self, forward_distance, side_distance):
+        self._move_leg(forward_distance, side_distance, False)
 
-        # Calculate new position
-        x, y = self.calculate_new_position(forward_distance, side_distance, is_left_leg)
-
-        # Update appropriate leg's position
-        if is_left_leg:
-            self.left_x = x
-            self.left_y = y
+    def _move_leg(self, forward_distance, side_distance, is_left):
+        # Calculate delta_x and delta_y based on direction
+        delta_x = forward_distance * np.sin(np.radians(self.direction))
+        delta_y = forward_distance * np.cos(np.radians(self.direction))
+        if is_left:
+            delta_x -= side_distance * np.cos(np.radians(self.direction))
+            delta_y += side_distance * np.sin(np.radians(self.direction))
         else:
-            self.right_x = x
-            self.right_y = y
+            delta_x += side_distance * np.cos(np.radians(self.direction))
+            delta_y -= side_distance * np.sin(np.radians(self.direction))
 
-        # Calculate center of mass
-        center_of_mass_x = (self.left_x + self.right_x) / 2
-        center_of_mass_y = (self.left_y + self.right_y) / 2
+        # Update leg position
+        if is_left:
+            self.left_x += delta_x
+            self.left_y += delta_y
+        else:
+            self.right_x += delta_x
+            self.right_y += delta_y
+
+        # Update center of mass
+        self.center_x = (self.left_x + self.right_x) / 2
+        self.center_y = (self.left_y + self.right_y) / 2
 
         # Check if agent is out of bounds
-        if abs(center_of_mass_x) > self.S/2 or abs(center_of_mass_y) > self.S/2:
+        if not (-self.S/2 <= self.center_x <= self.S/2 and -self.S/2 <= self.center_y <= self.S/2):
             raise Exception("Agent Out Of Bounds")
 
-    def calculate_leg_angle(self, forward_distance, side_distance):
-        return np.degrees(np.arctan2(side_distance, forward_distance))
 
-    def calculate_new_position(self, forward_distance, side_distance, is_left_leg):
-        # Convert direction to radians for trig functions
-        direction_radians = np.radians(self.direction)
-
-        # Calculate new position
-        x = forward_distance * np.cos(direction_radians) - side_distance * np.sin(direction_radians)
-        y = forward_distance * np.sin(direction_radians) + side_distance * np.cos(direction_radians)
-
-        # Adjust position based on current leg position
-        if is_left_leg:
-            x += self.left_x
-            y += self.left_y
-        else:
-            x += self.right_x
-            y += self.right_y
-
-        return x, y
-
-    def print_parameters(self):
-        print(f'LEFT_X: {round(self.left_x, 2)}, LEFT_Y: {round(self.left_y, 2)}, RIGHT_X: {round(self.right_x, 2)}, RIGHT_Y: {round(self.right_y, 2)}, DIRECTION: {round(self.direction)}, LEG_ANGLE: {round(self.calculate_leg_angle(self.right_x - self.left_x, self.right_y - self.left_y))}')
-
-def form01(agent):
-    plot_environment_from_top([agent], 'var/image_000')
-
-    agent.move_leg(0.5, 0, True)
-    agent.print_parameters()
-    plot_environment_from_top([agent], 'var/image_001')
-
-    agent.move_leg(1, 0, False)
-    agent.print_parameters()
-    plot_environment_from_top([agent], 'var/image_002')
-
-    agent.rotate(-90)
-    agent.print_parameters()
-    plot_environment_from_top([agent], 'var/image_003')
-
-    agent.move_leg(-1, 0, True)
-    agent.print_parameters()
-    plot_environment_from_top([agent], 'var/image_004')
-
-def plot_environment_from_top(agent_list, image_file):
+def plot_environment_from_top(agent, filename):
+    # Create figure and axes
     fig, ax = plt.subplots(figsize=(15, 15))
 
+    # Plot agent
+    head = (agent.center_x, agent.center_y)
+    foot_left = (agent.left_x, agent.left_y)
+    foot_right = (agent.right_x, agent.right_y)
+    arrow = Polygon([head, foot_left, foot_right], closed=False)
+    ax.add_patch(arrow)
+
     # Plot flat surface
-    flat_surface = patches.Rectangle((-Agent.S/2, -Agent.S/2), Agent.S, Agent.S, linewidth=1, edgecolor='grey', facecolor='none')
-    ax.add_patch(flat_surface)
-
-    colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange']  # Different colors for different agents
-
-    for i, agent in enumerate(agent_list):
-        color = colors[i % len(colors)]
-
-        # Plot agent's center of mass
-        center_of_mass_x = (agent.left_x + agent.right_x) / 2
-        center_of_mass_y = (agent.left_y + agent.right_y) / 2
-
-        # Plot agent's legs
-        plt.plot([agent.left_x, center_of_mass_x], [agent.left_y, center_of_mass_y], color=color)
-        plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
-
-        # Plot arrows for feet
-        dx = 0.25 * np.cos(np.radians(agent.direction))  # Convert direction to radians for trig functions
-        dy = 0.25 * np.sin(np.radians(agent.direction))
-        plt.arrow(agent.left_x, agent.left_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
-        plt.arrow(agent.right_x, agent.right_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
-
-        # Plot triangle representing agent's direction
-        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=np.radians(agent.direction-90), edgecolor=color, facecolor='none')
-        ax.add_patch(triangle)
-
-    plt.xlim([-Agent.S/2 - 1, Agent.S/2 + 1])
-    plt.ylim([-Agent.S/2 - 1, Agent.S/2 + 1])
-    plt.gca().set_aspect('equal', adjustable='box')
+    ax.set_xlim([-agent.S/2, agent.S/2])
+    ax.set_ylim([-agent.S/2, agent.S/2])
+    ax.grid(True)
 
     # Add cardinal directions
-    plt.text(0, Agent.S/2 + 0.5, 'North', fontsize=8, color='grey', ha='center')
-    plt.text(0, -Agent.S/2 - 0.5, 'South', fontsize=8, color='grey', ha='center')
-    plt.text(Agent.S/2 + 0.5, 0, 'East', fontsize=8, color='grey', va='center')
-    plt.text(-Agent.S/2 - 0.5, 0, 'West', fontsize=8, color='grey', va='center')
+    ax.text(0, agent.S/2, 'N', ha='center', va='bottom', fontsize=8, color='grey')
+    ax.text(0, -agent.S/2, 'S', ha='center', va='top', fontsize=8, color='grey')
+    ax.text(agent.S/2, 0, 'E', ha='right', va='center', fontsize=8, color='grey')
+    ax.text(-agent.S/2, 0, 'W', ha='left', va='center', fontsize=8, color='grey')
 
     # Ensure output directory exists
-    os.makedirs(os.path.dirname(image_file), exist_ok=True)
-    
-    # Save the plot
-    plt.savefig(image_file, dpi=300)  # increase dpi for a larger image
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    # Save the figure
+    plt.savefig(filename, dpi=300)
     plt.close()
+
+
+def form01(agent):
+    plot_environment_from_top(agent, 'var/image_000.png')
+
+    agent.move_left_leg(0.5, 0)
+    plot_environment_from_top(agent, 'var/image_001.png')
+
+    agent.move_right_leg(1, 0)
+    plot_environment_from_top(agent, 'var/image_002.png')
+
+    agent.rotate_body(-90)
+    plot_environment_from_top(agent, 'var/image_003.png')
+
+    agent.move_left_leg(-1, 0)
+    plot_environment_from_top(agent, 'var/image_004.png')
+
 
 def main():
     agent = Agent()
     form01(agent)
 
+
 if __name__ == "__main__":
     main()
-
