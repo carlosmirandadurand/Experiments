@@ -97,11 +97,37 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# No, this version of the program has not corrected the problem.
+
+# For one, you have been confusing the "direction that the agent is facing" with the "angle between the legs". 
+# - Both are angles indeed, but the "direction that the agent is facing" is an angle in the horizontal plane and the "angle between the legs" is an angle in the vertical plane.
+# - Remember from the initial instructions that the surface is flat (two-dimensional) but the agent is three-dimensional. 
+# - The "angle between the legs" should be calculated based on the position of each foot and the length of the legs "L".
+# - The "direction that the agent is facing" control the movement of the legs of the agent.    
+# - The MIN_LEG_ANGLE and MAX_LEG_ANGLE limits apply only to the "angle between the legs".  What these limits try to ensure is that the agent does not move a foot so far away from the other foot that it would leave its body stretched too far or stretched unrealistcally.     
+
+# For two, the same issues that I mentioned in the previous message still exist:
+# - The initial direction of the agent should be south, so the triangle and the arrows should point down.  
+# - The first two moves are in the forward direction for the agent, so we should see the agent moving down in the plot (in the south direction.)
+# - Only if the third move the agent is changing directions. 
+
+# Feel free to rewrite the entire program, if this is needed to meet the requirements.
+
+# Answer from ChatGPT: I apologize for misunderstanding your request, and thank you for your patience. Let's go over the requirements again to ensure that I understand them correctly:
+# The agent's direction refers to the direction that the agent is facing in the horizontal plane, i.e., it determines the direction that the agent will move when it takes a step forward. This direction is independent of the relative position of the agent's feet. It is determined by the orientation of the agent's body.
+# The angle between the legs is a measure in the vertical plane, determined by the position of each foot relative to the agent's center of mass and the length of the legs.
+# The constraints MIN_LEG_ANGLE and MAX_LEG_ANGLE apply to the angle between the legs, not the direction that the agent is facing. The goal of these constraints is to prevent the agent from moving a foot too far away from the other foot, thereby maintaining a reasonable and realistic body posture.
+# The agent starts facing south, so the initial plot should show the agent's triangle and the arrows pointing down (towards the south).
+# The first two steps are forward movements, so the agent should move towards the south on the plot.
+# Let's implement these changes:
+
+#--------------------------------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 import math
+import numpy as np
 
 class Agent:
     S = 10  # Side length of the flat surface
@@ -112,24 +138,24 @@ class Agent:
     MAX_LEG_ANGLE = 80
 
     def __init__(self):
-        self.agent_direction = 180  # Initial direction is south
-        self.left_x = 0
+        self.direction = 180  # Initial direction is south
+        self.left_x = -self.L/2
         self.left_y = 0
-        self.right_x = 0
+        self.right_x = self.L/2
         self.right_y = 0
 
-    def rotate_body(self, r):
-        self.agent_direction = (self.agent_direction + r) % 360
+    def rotate(self, r):
+        self.direction = (self.direction + r) % 360
 
     def move_leg(self, forward_distance, side_distance, is_left_leg):
+        # Check for leg angle constraint
         leg_angle = self.calculate_leg_angle(forward_distance, side_distance)
 
-        # Check for leg angle constraint
         if leg_angle < self.MIN_LEG_ANGLE or leg_angle > self.MAX_LEG_ANGLE:
             raise Exception("InvalidLegAngle")
 
         # Calculate new position
-        x, y = self.calculate_new_position(forward_distance, side_distance)
+        x, y = self.calculate_new_position(forward_distance, side_distance, is_left_leg)
 
         # Update appropriate leg's position
         if is_left_leg:
@@ -148,20 +174,28 @@ class Agent:
             raise Exception("Agent Out Of Bounds")
 
     def calculate_leg_angle(self, forward_distance, side_distance):
-        return math.degrees(math.atan2(side_distance, forward_distance))
+        return np.degrees(np.arctan2(side_distance, forward_distance))
 
-    def calculate_new_position(self, forward_distance, side_distance):
-        # Convert agent direction to radians for trig functions
-        agent_direction_radians = math.radians(self.agent_direction)
+    def calculate_new_position(self, forward_distance, side_distance, is_left_leg):
+        # Convert direction to radians for trig functions
+        direction_radians = np.radians(self.direction)
 
         # Calculate new position
-        x = forward_distance * math.cos(agent_direction_radians) - side_distance * math.sin(agent_direction_radians)
-        y = forward_distance * math.sin(agent_direction_radians) + side_distance * math.cos(agent_direction_radians)
+        x = forward_distance * np.cos(direction_radians) - side_distance * np.sin(direction_radians)
+        y = forward_distance * np.sin(direction_radians) + side_distance * np.cos(direction_radians)
+
+        # Adjust position based on current leg position
+        if is_left_leg:
+            x += self.left_x
+            y += self.left_y
+        else:
+            x += self.right_x
+            y += self.right_y
 
         return x, y
 
     def print_parameters(self):
-        print(f'LEFT_X: {round(self.left_x, 2)}, LEFT_Y: {round(self.left_y, 2)}, RIGHT_X: {round(self.right_x, 2)}, RIGHT_Y: {round(self.right_y, 2)}, AGENT_DIRECTION: {round(self.agent_direction)}, LEG_ANGLE: {round(self.calculate_leg_angle(self.right_x - self.left_x, self.right_y - self.left_y))}')
+        print(f'LEFT_X: {round(self.left_x, 2)}, LEFT_Y: {round(self.left_y, 2)}, RIGHT_X: {round(self.right_x, 2)}, RIGHT_Y: {round(self.right_y, 2)}, DIRECTION: {round(self.direction)}, LEG_ANGLE: {round(self.calculate_leg_angle(self.right_x - self.left_x, self.right_y - self.left_y))}')
 
 def form01(agent):
     plot_environment_from_top([agent], 'var/image_000')
@@ -174,7 +208,7 @@ def form01(agent):
     agent.print_parameters()
     plot_environment_from_top([agent], 'var/image_002')
 
-    agent.rotate_body(-90)
+    agent.rotate(-90)
     agent.print_parameters()
     plot_environment_from_top([agent], 'var/image_003')
 
@@ -203,13 +237,13 @@ def plot_environment_from_top(agent_list, image_file):
         plt.plot([agent.right_x, center_of_mass_x], [agent.right_y, center_of_mass_y], color=color)
 
         # Plot arrows for feet
-        dx = 0.25 * math.cos(math.radians(agent.agent_direction))  # Convert direction to radians for trig functions
-        dy = 0.25 * math.sin(math.radians(agent.agent_direction))
+        dx = 0.25 * np.cos(np.radians(agent.direction))  # Convert direction to radians for trig functions
+        dy = 0.25 * np.sin(np.radians(agent.direction))
         plt.arrow(agent.left_x, agent.left_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
         plt.arrow(agent.right_x, agent.right_y, dx, dy, color=color, head_width=0.05, head_length=0.1, length_includes_head=True)
 
         # Plot triangle representing agent's direction
-        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=math.radians(agent.agent_direction-90), edgecolor=color, facecolor='none')
+        triangle = patches.RegularPolygon((center_of_mass_x, center_of_mass_y), numVertices=3, radius=0.1, orientation=np.radians(agent.direction-90), edgecolor=color, facecolor='none')
         ax.add_patch(triangle)
 
     plt.xlim([-Agent.S/2 - 1, Agent.S/2 + 1])
