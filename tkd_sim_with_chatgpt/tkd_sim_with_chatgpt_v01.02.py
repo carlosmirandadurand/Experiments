@@ -61,6 +61,13 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Another clarification.  The legs are represented by two line segments connected at their respective top ends (and these line segments are always in a vertical plane.)    The bottom ends of both legs are always on the flat surface (z = 0).  Hence, the top ends of the legs cannot be at the same height (z = 0) 
+
+#--------------------------------------------------------------------------------------------------
+
+# Sorry, I am not communicating something clearly enough.  The center of mass and the top ends of both legs are the exact same point.  The coordinates of that point are (self.CENTER_X, self.CENTER_Y, and self.CENTER_Z).  Therefore, CENTER_Z cannot be zero.  CENTER_Z must be calculated based on the length of the legs and the position of the bottom ends of the legs.
+
+#--------------------------------------------------------------------------------------------------
 
 import math
 
@@ -93,7 +100,8 @@ class Agent:
     def calculate_center_of_mass(self):
         self.CENTER_X = (self.LEFT_X + self.RIGHT_X) / 2
         self.CENTER_Y = (self.LEFT_Y + self.RIGHT_Y) / 2
-        self.CENTER_Z = 0  # Center of mass coincides with the meeting point of the leg segments
+        leg_length = math.sqrt((self.LEFT_X - self.RIGHT_X)**2 + (self.LEFT_Y - self.RIGHT_Y)**2)
+        self.CENTER_Z = math.sqrt(self.L**2 - (leg_length / 2)**2)
         self.LEG_ANGLE = math.degrees(math.atan2(self.LEFT_Y - self.RIGHT_Y, self.LEFT_X - self.RIGHT_X))
 
     def validate_leg_positions(self):
