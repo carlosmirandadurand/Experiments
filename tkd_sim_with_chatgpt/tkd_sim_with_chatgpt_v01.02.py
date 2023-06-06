@@ -37,7 +37,9 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Please note that you missed the third coordinate for the center of mass (self.CENTER_Z) representing its height.
 
+#--------------------------------------------------------------------------------------------------
 
 import math
 
@@ -70,6 +72,7 @@ class Agent:
     def calculate_center_of_mass(self):
         self.CENTER_X = (self.LEFT_X + self.RIGHT_X) / 2
         self.CENTER_Y = (self.LEFT_Y + self.RIGHT_Y) / 2
+        self.CENTER_Z = 0  # Assume center of mass is at height 0
         self.LEG_ANGLE = math.degrees(math.atan2(self.LEFT_Y - self.RIGHT_Y, self.LEFT_X - self.RIGHT_X))
 
     def validate_leg_positions(self):
