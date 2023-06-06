@@ -1,5 +1,5 @@
 
-# Instructions sent to ChatGPT v4:
+# Instructions sent to ChatGPT v3.5 (correction!):
 
 #--------------------------------------------------------------------------------------------------
 
@@ -69,6 +69,19 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Here is how the value of CENTER_Z should be calculated:
+# - Picture an isoceles triangle in 3D space 
+# - The coordinates of the three angles of that triangle (which we will designate A, B, and C respectively) are:
+#     Point A = (LEFT_X, LEFT_Y, 0)
+#     Point B = (RIGHT_X, RIGHT_Y, 0)
+#     Point C = (CENTER_X, CENTER_Y, CENTER_Z)
+# - The segments AC and BC both have length L (which is why this is an isoceles triangle)
+# - The segment AB is contained in the horizontal plane z = 0
+# - The triangle formed by segments AB, BC, and AC is in a vertical plane (perpendicular to plane z = 0) 
+# - If the values of LEFT_X, LEFT_Y, RIGHT_X, RIGHT_Y, and L are known, can you calculate the values of CENTER_X, CENTER_Y, and CENTER_Z?
+
+#--------------------------------------------------------------------------------------------------
+
 import math
 
 class Agent:
@@ -100,8 +113,7 @@ class Agent:
     def calculate_center_of_mass(self):
         self.CENTER_X = (self.LEFT_X + self.RIGHT_X) / 2
         self.CENTER_Y = (self.LEFT_Y + self.RIGHT_Y) / 2
-        leg_length = math.sqrt((self.LEFT_X - self.RIGHT_X)**2 + (self.LEFT_Y - self.RIGHT_Y)**2)
-        self.CENTER_Z = math.sqrt(self.L**2 - (leg_length / 2)**2)
+        self.CENTER_Z = math.sqrt(self.L**2 - (self.L/2)**2)
         self.LEG_ANGLE = math.degrees(math.atan2(self.LEFT_Y - self.RIGHT_Y, self.LEFT_X - self.RIGHT_X))
 
     def validate_leg_positions(self):
