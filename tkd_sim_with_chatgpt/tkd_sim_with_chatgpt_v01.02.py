@@ -45,6 +45,23 @@
 
 #--------------------------------------------------------------------------------------------------
 
+# Is it valid to assume that the height of the center of mass is at half the leg length above the surface?
+
+# A: You're correct, assuming that the height of the center of mass is at half the leg length above the surface may not be valid in all cases. I apologize for the confusion.
+# In a more accurate simulation, the exact height of the center of mass would depend on the specific proportions and configuration of the agent. To model the center of mass more realistically, you would need to consider the distribution of mass within the agent's body and its effect on the vertical position of the center of mass.
+# In this simplified simulation, you can make an assumption about the height of the center of mass based on the specific requirements of your scenario. If you have specific guidelines or measurements for the agent's proportions, you can use those to determine a more appropriate value for the vertical position of the center of mass.
+# Alternatively, if you have access to the mass distribution of the agent's body, you could calculate the center of mass based on the individual masses and their positions. This would involve assigning weights to different body parts and calculating a weighted average for the center of mass position.
+# Ultimately, the choice of how to model the height of the center of mass depends on the level of accuracy and realism required for your simulation.
+
+#--------------------------------------------------------------------------------------------------
+
+# One clarification.  This agent model doesn't have any information about the "mass distribution" of the agent.  The location of the center of the mass of the agent was given as instructions.  The center of  mass will coincide with the point where the two top ends of both legs meet.   
+# A: Apologies for any confusion caused. Since the agent model doesn't have information about the mass distribution, we can assume that the center of mass coincides with the point where the two top ends of both legs meet. In this case, the z-coordinate of the center of mass will be 0, as specified in the problem statement.
+# Here's the updated code considering the center of mass at the meeting point of the two leg segments:
+
+#--------------------------------------------------------------------------------------------------
+
+
 import math
 
 class Agent:
@@ -76,7 +93,7 @@ class Agent:
     def calculate_center_of_mass(self):
         self.CENTER_X = (self.LEFT_X + self.RIGHT_X) / 2
         self.CENTER_Y = (self.LEFT_Y + self.RIGHT_Y) / 2
-        self.CENTER_Z = 0.5 * self.L  # Assuming center of mass is at half the leg length above the surface
+        self.CENTER_Z = 0  # Center of mass coincides with the meeting point of the leg segments
         self.LEG_ANGLE = math.degrees(math.atan2(self.LEFT_Y - self.RIGHT_Y, self.LEFT_X - self.RIGHT_X))
 
     def validate_leg_positions(self):
