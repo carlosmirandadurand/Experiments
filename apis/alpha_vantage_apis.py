@@ -227,43 +227,59 @@ def print_json(obj, indent=''):
 ###########################################################################################################
 
 
-
-
+# data = get_alpha_vantage_time_series (['BAC'], alpha_vantage_access_key)
+# data = get_alpha_vantage_financial_statement (['BAC'], alpha_vantage_access_key, 'BALANCE_SHEET')
+# data = get_alpha_vantage_financial_statement (['BAC'], alpha_vantage_access_key, 'INCOME_STATEMENT')
+# data = get_alpha_vantage_financial_statement (['BAC'], alpha_vantage_access_key, 'CASH_FLOW')
+data = get_alpha_vantage_financial_statement (['BAC'], alpha_vantage_access_key, 'EARNINGS', 'annualEarnings')
+data
 
 
 
 #%% #######################################################################################################
-# Tests / EDA
+# EDA & Tests 
 ###########################################################################################################
 
+# #----- Explore Data -----
 # # Exploring contents from TIME_SERIES_DAILY_ADJUSTED function
-# url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=full&apikey={alpha_vantage_access_key}'
+# url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=BAC&outputsize=full&apikey={alpha_vantage_access_key}'
 # r = requests.get(url)
 # data = r.json()
 # print_json(data)
 
-
 # # Exploring contents from BALANCE_SHEET function
-# url = f'https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=IBM&apikey={alpha_vantage_access_key}'
+# url = f'https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=BAC&apikey={alpha_vantage_access_key}'
 # r = requests.get(url)
 # data = r.json()
 # print_json(data)
 
 # # Exploring contents from EARNINGS function
-# url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol=IBM&apikey={alpha_vantage_access_key}'
+# url = f'https://www.alphavantage.co/query?function=EARNINGS&symbol=BAC&apikey={alpha_vantage_access_key}'
 # r = requests.get(url)
 # data = r.json()
 # print_json(data)
-
 
 # # Exploring contents from EARNINGS_CALENDAR function
-# url = f'https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&symbol=IBM&horizon=12month&apikey={alpha_vantage_access_key}'  # Fix issue!
+# url = f'https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&symbol=BAC&horizon=12month&apikey={alpha_vantage_access_key}'  # Fix issue!
+# r = requests.get(url)
+# data = r.json()
+# print_json(data)
+
+# # Exploring contents from INFLATION function
+# url = f'https://www.alphavantage.co/query?function=INFLATION&apikey={alpha_vantage_access_key}'
+# r = requests.get(url)
+# data = r.json()
+# print_json(data)
+
+# # Exploring contents from SMA function (simple moving average)
+# url = f'https://www.alphavantage.co/query?function=SMA&symbol=USDEUR&interval=weekly&time_period=10&series_type=open&apikey={alpha_vantage_access_key}'
 # r = requests.get(url)
 # data = r.json()
 # print_json(data)
 
 
-# # Testing simple functions
+
+# #----- Testing simple functions -----
 # data = get_alpha_vantage_single_time_series("MSFT", alpha_vantage_access_key)
 # print(data.head())
 
@@ -271,7 +287,8 @@ def print_json(obj, indent=''):
 # print(data)
 
 
-# # Testing multi-ticker functions
+
+# #----- Testing multi-ticker functions -----
 # data = get_alpha_vantage_time_series(bank_list2, alpha_vantage_access_key)
 # summary_data = check_time_series(data)
 # print(data.shape)
@@ -299,6 +316,7 @@ def print_json(obj, indent=''):
 # print(data.head())
 # print(summary_data.shape)
 # print(summary_data)
+
 
 
 #%% #######################################################################################################
