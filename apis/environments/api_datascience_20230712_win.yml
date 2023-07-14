@@ -1,0 +1,46 @@
+# Conda environment for Data Science with additional "Data Libraries" or "Data APIs" (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/api_datascience_20230712_win.lock.yml
+# Use:
+#   $ conda activate api_datascience_20230712_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env create --file ./environments/api_datascience_20230712_win.yml 1> api_datascience_20230712_win.output.txt 2>&1 
+#   $ conda activate api_datascience_20230712_win
+#   $ conda env export > ./environments/api_datascience_20230712_win.lock.yml
+name: api_datascience_20230712_win
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - pyodbc
+  - snowflake-connector-python
+  - pip:
+    - datetime
+    - python-dotenv
+    - pathlib
+    - argparse
+    - requests
+    - catboost 
+    - mlflow
+    - ipykernel
+    - yfinance
+    - openai
+    - nltk
+    - refinitiv.data
+    - quandl
+
+
+
+
+
+
+
