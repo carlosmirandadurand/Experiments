@@ -1,37 +1,44 @@
 #%%
-import sqlite3
+import os
 import csv
+import sqlite3
+
+# Process parameters
+output_subdirectory  = 'downloads'
+output_csv_file_name = f'{output_subdirectory}/exported_question_data.csv'
+
+
 
 #%%
-# Connect to the SQLite database
+# Connect to the SQLite database and check what tables are available
 conn = sqlite3.connect('instance/questions.db')
-
-# Create a cursor object to execute SQL queries
 cursor = conn.cursor()
-
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 table_names = cursor.fetchall()
 print(table_names)
 
 
 #%%
-# Execute a query to fetch the data from the table
+# Execute a query to fetch the data from the Question table
 query = "SELECT * FROM Question"
 cursor.execute(query)
-
-# Fetch all the rows returned by the query
 rows = cursor.fetchall()
 
-#%%
-# Define the CSV file path
-csv_file_path = 'exported_question_data.csv'
 
-# Write the fetched rows to a CSV file
-with open(csv_file_path, 'w', newline='') as csv_file:
+#%%
+# Check if the output subdirectory exists
+if not os.path.exists(output_subdirectory):
+    os.makedirs(output_subdirectory)
+    print("Subdirectory created:", output_subdirectory)
+else:
+    print("Subdirectory already exists:", output_subdirectory)
+
+
+#%%
+# Export the questions to a CSV file
+with open(output_csv_file_name, 'w', newline='') as csv_file:
     csv_writer = csv.writer(csv_file)
-    # Write the header row
     csv_writer.writerow(['ID', 'Name', 'Email', 'Question'])
-    # Write the data rows
     csv_writer.writerows(rows)
 
 #%%
