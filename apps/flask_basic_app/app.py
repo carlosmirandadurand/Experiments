@@ -1,25 +1,44 @@
 
 import os
+import requests
+import time
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 
+import json
+import openai
+
+from dotenv import load_dotenv
+
 
 ###########################################################################
 # Application Objects
 ###########################################################################
 
+# Load environment variables
+load_dotenv()
 
+
+# Initialize web application
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flask_basic_app.db'
-app.config['SECRET_KEY'] = os.environ.get('FLASK_BASIC_APP_SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('flask_basic_app_secret_key')
 
 db = SQLAlchemy(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+
+# Connect to OpenAI 
+openai.organization = os.getenv('openai_organization_id')
+openai.api_key = os.getenv('openai_organization_key')
+openai_model = 'gpt-3.5-turbo' 
+
 
 
 ###########################################################################
@@ -38,6 +57,11 @@ class Question(db.Model):
         self.user_email = user_email
         self.question   = question
 
+    def set_answer(self, answer):
+        self.answer = answer
+        db.session.commit()
+
+
 class User(UserMixin, db.Model):
     id         = db.Column(db.Integer    , primary_key=True)
     username   = db.Column(db.String(50) , nullable=False, unique=True)
@@ -52,17 +76,51 @@ class User(UserMixin, db.Model):
         self.user_email = user_email
 
 
+
 ###########################################################################
 # APIs
 ###########################################################################
 
-def start_process_new_question(question_id, user_id, question):
-    # Placeholder function for processing new question (implement as needed)
-    pass
+def chat_gpt_basic_call (model, prompt):
 
-def get_process_status_for_question(question_id):
-    # Placeholder function for getting process status for a question (implement as needed)
-    pass
+    if model is None:
+        return prompt # For testing 
+    
+    try:
+        completion = openai.ChatCompletion.create(
+            model = model,
+            temperature = 0.1,
+            n = 1,
+            messages=[
+                {"role": "user", "content": prompt},
+            ])
+        
+        response = completion['choices'][0]['message']['content']
+        response_attributes = { 
+            'id':                completion['id'],
+            'response_ms':       completion.response_ms,
+            'model':             completion['model'],
+            'prompt_tokens':     completion['usage']['prompt_tokens'],
+            'completion_tokens': completion['usage']['completion_tokens'],
+            'total_tokens':      completion['usage']['total_tokens'],
+            }    
+
+    except Exception as err:
+        response = f"Unexpected Error: {err=}"
+        response_attributes = {}
+
+    return (response, response_attributes)
+
+
+
+def start_process_new_question(question_id, question):
+
+    prompt = question
+
+    response, response_attributes = chat_gpt_basic_call (openai_model, prompt)
+
+    return (response, response_attributes)
+
 
 
 
@@ -86,7 +144,6 @@ def login():
             if check_password_hash(user.password, password):
                 login_user(user)
                 session['user_id'] = user.id
-                print("login user_id:", user.id, "name:", user.full_name, "user_email:", user.user_email)
                 return redirect(url_for('form_question'))
         return redirect(url_for('login'))
     return render_template('login.html')
@@ -106,7 +163,6 @@ def register():
             db.session.commit()
             login_user(new_user)
             session['user_id'] = new_user.id
-            print("register and login new user_id:", new_user.id, "name:", new_user.full_name, "user_email:", new_user.user_email)
             return redirect(url_for('form_question'))
 
         except IntegrityError as e:
@@ -144,7 +200,6 @@ def form_question():
     if user:
         name = user.full_name
         user_email = user.user_email
-        print("form_question: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
     else:
         return redirect(url_for('logout'))
 
@@ -155,8 +210,9 @@ def form_question():
         db.session.add(new_question)
         db.session.commit()
         session['question_id'] = new_question.question_id
-        start_process_new_question(new_question.question_id, user_id, question)  
-        return redirect(url_for('form_answer'))
+        response, response_attributes = start_process_new_question(new_question.question_id, question)  
+        new_question.set_answer(response)
+        return render_template('form_answer.html', name=name, question=question, response=response)
     
     # Load the form 
     return render_template('form_question.html', name=name, email=user_email)
@@ -172,14 +228,11 @@ def form_answer():
     if user:
         name = user.full_name
         user_email = user.user_email
-        print("form_answer: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
     else:
         return redirect(url_for('logout'))
 
     # Identify question
     question_id = session.get('question_id', '')
-    answer = get_process_status_for_question(question_id)
-    # Perform appropriate action for checking status (implement as needed)
 
     # Process the submited form
     if request.method == 'POST':
@@ -190,8 +243,6 @@ def form_answer():
             return redirect(url_for('report_questions'))
         elif button == 'Logout':
             return redirect(url_for('logout'))
-        elif button == 'Check Status':
-            return render_template('form_answer.html')
     
     # Load the form 
     return render_template('form_answer.html')
@@ -207,7 +258,6 @@ def report_questions():
     if user:
         name = user.full_name
         user_email = user.user_email
-        print("report_questions: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
     else:
         return redirect(url_for('logout'))
     

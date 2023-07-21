@@ -4,9 +4,18 @@
         <title>Thank You</title>
     </head>
     <body>
-        <p>Thank you for your question, {{ name }}. Your answer will be here soon.</p>
-        <form method="POST">
-            <input type="submit" name="button" value="Check Status">
+        <p>Thank you for your question, {{ name }}. </p>
+        {% if question %}
+        <div> 
+            <p><pre>{{ question }}</pre></p>
+        </div>
+        {% endif %}
+        {% if response %}
+        <div> 
+            <p><pre>{{ response }}</pre></p>
+        </div>
+        {% endif %}
+        <form action='/form_answer' method="POST">
             <input type="submit" name="button" value="New Question">
             <input type="submit" name="button" value="List Questions">
             <input type="submit" name="button" value="Logout">
