@@ -4,16 +4,16 @@ import csv
 import sqlite3
 
 # Process parameters
-output_subdirectory  = 'downloads'
+output_subdirectory  = 'instance'
 output_csv_file_name1 = f'{output_subdirectory}/exported_question_data.csv'
 output_csv_file_name2 = f'{output_subdirectory}/exported_user_data.csv'
-
+input_database = f'{output_subdirectory}/flask_basic_app.db'
 
 
 #%%
 # Connect to the SQLite database and check what tables are available
 
-conn = sqlite3.connect('instance/flask_basic_app.db')
+conn = sqlite3.connect(input_database)
 cursor = conn.cursor()
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 table_names = cursor.fetchall()

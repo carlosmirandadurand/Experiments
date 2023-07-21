@@ -82,7 +82,7 @@ def login():
                 login_user(user)
                 session['name'] = user.full_name
                 session['email'] = user.email
-                return redirect(url_for('form'))
+                return redirect(url_for('form_question'))
         return redirect(url_for('login'))
     return render_template('login.html')
 
@@ -98,7 +98,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
-        return redirect(url_for('form'))
+        return redirect(url_for('form_question'))
     return render_template('register.html')
 
 @app.route('/logout')
@@ -109,15 +109,14 @@ def logout():
 
 @app.route('/')
 def index():
-    return redirect(url_for('form'))
+    return redirect(url_for('form_question'))
 
-@app.route('/form', methods=['GET', 'POST'])
+@app.route('/form_question', methods=['GET', 'POST'])
 @login_required
-def form():
+def form_question():
     name = session.get('name', '')
     email = session.get('email', '')
-    print("Name:", name)
-    print("Email:", email)
+    print("form_question: name:", name, "email:", email, "method:", request.method)
 
     if request.method == 'POST':
         question = request.form['question']
@@ -125,21 +124,21 @@ def form():
         db.session.add(new_question)
         db.session.commit()
         start_process_new_question(name, email, question)  
-        return redirect(url_for('thankyou'))
-    return render_template('form.html', name=name, email=email)
+        return redirect(url_for('form_answer'))
+    return render_template('form_question.html', name=name, email=email)
 
-@app.route('/thankyou', methods=['GET', 'POST'])
+@app.route('/form_answer', methods=['GET', 'POST'])
 @login_required
-def thankyou():
+def form_answer():
     name = session.get('name', '')
     if request.method == 'POST':
         button = request.form['button']
         if button == 'New Question':
-            return redirect(url_for('form'))
+            return redirect(url_for('form_question'))
         elif button == 'Check Status':
             get_process_status_for_question()
             # Perform appropriate action for checking status (implement as needed)
-    return render_template('thankyou.html')
+    return render_template('form_answer.html')
 
 
 ###########################################################################
