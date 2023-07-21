@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Question Form</title>
+</head>
 <body>
-
-<h2>Contact Form</h2>
-
-<form action="/" method="post">
-  <label for="name">Name:</label><br>
-  <input type="text" id="name" name="name"><br>
-  <label for="email">Email:</label><br>
-  <input type="text" id="email" name="email"><br>
-  <label for="question">Question:</label><br>
-  <textarea name="question"></textarea><br>
-  <input type="submit" value="Submit">
-</form> 
-
+    <h1>Question Form</h1>
+    <form method="POST">
+        <div>
+            <label for="name">Name:</label>
+            <label id="name">{{ name }}</label>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <label id="email">{{ email }}</label>
+        </div>
+        <div>
+            <label for="question">Question:</label>
+            <textarea id="question" name="question" required></textarea>
+        </div>
+        <div>
+            <input type="submit" value="Submit">
+        </div>
+    </form>
 </body>
 </html>
