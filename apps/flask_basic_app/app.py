@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import IntegrityError
 
 
 ###########################################################################
@@ -26,50 +27,54 @@ login_manager.login_view = 'login'
 ###########################################################################
 
 class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    email = db.Column(db.String(50))
-    question = db.Column(db.Text)
+    question_id = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer)
+    user_email  = db.Column(db.String(50))
+    question    = db.Column(db.Text)
+    answer      = db.Column(db.Text)
 
-    def __init__(self, name, email, question):
-        self.name = name
-        self.email = email
-        self.question = question
+    def __init__(self, user_id, user_email, question):
+        self.user_id    = user_id
+        self.user_email = user_email
+        self.question   = question
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(255))
-    full_name = db.Column(db.String(100))
-    email = db.Column(db.String(100))
+    id         = db.Column(db.Integer    , primary_key=True)
+    username   = db.Column(db.String(50) , nullable=False, unique=True)
+    password   = db.Column(db.String(255), nullable=False)
+    full_name  = db.Column(db.String(100), nullable=False)
+    user_email = db.Column(db.String(100), nullable=False, unique=True)
 
-    def __init__(self, username, password, full_name, email):
-        self.username = username
-        self.password = password
-        self.full_name = full_name
-        self.email = email
+    def __init__(self, username, password, full_name, user_email):
+        self.username   = username
+        self.password   = password
+        self.full_name  = full_name
+        self.user_email = user_email
 
 
 ###########################################################################
 # APIs
 ###########################################################################
 
-def start_process_new_question(name, email, question):
+def start_process_new_question(question_id, user_id, question):
     # Placeholder function for processing new question (implement as needed)
     pass
 
-def get_process_status_for_question():
+def get_process_status_for_question(question_id):
     # Placeholder function for getting process status for a question (implement as needed)
     pass
 
 
+
 ###########################################################################
-# Routes
+# Authentication / Registration Routes
 ###########################################################################
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -80,26 +85,36 @@ def login():
         if user:
             if check_password_hash(user.password, password):
                 login_user(user)
-                session['name'] = user.full_name
-                session['email'] = user.email
+                session['user_id'] = user.id
+                print("login user_id:", user.id, "name:", user.full_name, "user_email:", user.user_email)
                 return redirect(url_for('form_question'))
         return redirect(url_for('login'))
     return render_template('login.html')
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        full_name = request.form['full_name']
-        email = request.form['email']
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password, full_name=full_name, email=email)
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-        return redirect(url_for('form_question'))
+        username   = request.form['username']
+        password   = request.form['password']
+        full_name  = request.form['full_name']
+        user_email = request.form['email']
+    
+        try:
+            new_user = User(username=username, password=generate_password_hash(password), full_name=full_name, user_email=user_email)
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            session['user_id'] = new_user.id
+            print("register and login new user_id:", new_user.id, "name:", new_user.full_name, "user_email:", new_user.user_email)
+            return redirect(url_for('form_question'))
+
+        except IntegrityError as e:
+            db.session.rollback()
+            error_message = "Username or email already exists. Please choose a different one."
+            return render_template('register.html', error_message=error_message)
     return render_template('register.html')
+
 
 @app.route('/logout')
 @login_required
@@ -107,38 +122,100 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
+
+###########################################################################
+# Application Routes
+###########################################################################
+
+
 @app.route('/')
 def index():
     return redirect(url_for('form_question'))
 
+
 @app.route('/form_question', methods=['GET', 'POST'])
 @login_required
 def form_question():
-    name = session.get('name', '')
-    email = session.get('email', '')
-    print("form_question: name:", name, "email:", email, "method:", request.method)
 
+    # Identify the user
+    user_id = session.get('user_id', '')
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        name = user.full_name
+        user_email = user.user_email
+        print("form_question: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
+    else:
+        return redirect(url_for('logout'))
+
+    # Process the submited form
     if request.method == 'POST':
         question = request.form['question']
-        new_question = Question(name, email, question)
+        new_question = Question(user_id, user_email, question)
         db.session.add(new_question)
         db.session.commit()
-        start_process_new_question(name, email, question)  
+        session['question_id'] = new_question.question_id
+        start_process_new_question(new_question.question_id, user_id, question)  
         return redirect(url_for('form_answer'))
-    return render_template('form_question.html', name=name, email=email)
+    
+    # Load the form 
+    return render_template('form_question.html', name=name, email=user_email)
+
 
 @app.route('/form_answer', methods=['GET', 'POST'])
 @login_required
 def form_answer():
-    name = session.get('name', '')
+    
+    # Identify the user
+    user_id = session.get('user_id', '')
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        name = user.full_name
+        user_email = user.user_email
+        print("form_answer: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
+    else:
+        return redirect(url_for('logout'))
+
+    # Identify question
+    question_id = session.get('question_id', '')
+    answer = get_process_status_for_question(question_id)
+    # Perform appropriate action for checking status (implement as needed)
+
+    # Process the submited form
     if request.method == 'POST':
         button = request.form['button']
         if button == 'New Question':
             return redirect(url_for('form_question'))
+        elif button == 'List Questions':
+            return redirect(url_for('report_questions'))
+        elif button == 'Logout':
+            return redirect(url_for('logout'))
         elif button == 'Check Status':
-            get_process_status_for_question()
-            # Perform appropriate action for checking status (implement as needed)
+            return render_template('form_answer.html')
+    
+    # Load the form 
     return render_template('form_answer.html')
+
+
+@app.route('/report_questions', methods=['GET'])
+@login_required
+def report_questions():
+    
+    # Identify the user
+    user_id = session.get('user_id', '')
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        name = user.full_name
+        user_email = user.user_email
+        print("report_questions: user_id:", user_id, "name:", name, "user_email:", user_email, "method:", request.method)
+    else:
+        return redirect(url_for('logout'))
+    
+    # Pull and show all the questions
+    rows = Question.query.all()
+    column_names = Question.__mapper__.columns.keys()
+    return render_template('report_questions.html', rows=rows, column_names=column_names)
+
 
 
 ###########################################################################

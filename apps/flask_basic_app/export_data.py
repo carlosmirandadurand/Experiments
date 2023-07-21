@@ -5,8 +5,6 @@ import sqlite3
 
 # Process parameters
 output_subdirectory  = 'instance'
-output_csv_file_name1 = f'{output_subdirectory}/exported_question_data.csv'
-output_csv_file_name2 = f'{output_subdirectory}/exported_user_data.csv'
 input_database = f'{output_subdirectory}/flask_basic_app.db'
 
 
@@ -17,6 +15,7 @@ conn = sqlite3.connect(input_database)
 cursor = conn.cursor()
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 table_names = cursor.fetchall()
+table_names = [t[0] for t in table_names]
 print(table_names)
 
 
@@ -34,28 +33,23 @@ else:
 #%%
 # Export the questions to a CSV file
 
-query = "SELECT * FROM Question"
-cursor.execute(query)
-rows = cursor.fetchall()
+for t in table_names:
+    output_csv_file_name = f'{output_subdirectory}/exported_data_{t}.csv'
+    print(f"Export Results for Table {t} --> {output_csv_file_name}")
 
-with open(output_csv_file_name1, 'w', newline='') as csv_file:
-    csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['ID', 'Name', 'Email', 'Question'])
-    csv_writer.writerows(rows)
+    query = f"SELECT * FROM {t} WHERE 1=2"
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    column_names = [column[0] for column in cursor.description if column[0] not in ['password']]
 
+    query = f"SELECT { ', '.join(column_names) } FROM {t}"
+    cursor.execute(query)
+    rows = cursor.fetchall()
 
-#%%
-# Export the users to a CSV file
-
-query = "SELECT id, username, full_name, email FROM User"
-cursor.execute(query)
-rows = cursor.fetchall()
-
-with open(output_csv_file_name2, 'w', newline='') as csv_file:
-    csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['ID', 'Username', 'Full Name', 'Email'])
-    csv_writer.writerows(rows)
-
+    with open(output_csv_file_name, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(column_names)
+        csv_writer.writerows(rows)
 
 
 #%%
