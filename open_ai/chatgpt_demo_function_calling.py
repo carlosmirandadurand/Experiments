@@ -18,19 +18,33 @@ from dotenv import load_dotenv
 
 def get_current_weather(location, unit="fahrenheit"):
     """Get the current weather in a given location"""
+    if unit.lower()=="fahrenheit":
+        t = random.randint(30, 90)
+        if t >= 60:
+            f = ["sunny", "windy"]
+        else:
+            f = ["rainy", "windy"]
+    else: 
+        t = random.randint(-1, 32)
+        if t >= 15:
+            f = ["sunny", "windy"]
+        else:
+            f = ["rainy", "windy"]
     weather_info = {
         "location": location,
-        "temperature": random.randint(30, 105), #if unit.lower()=="fahrenheit" else random.randint(-1, 40),
+        "temperature": t, 
         "unit": unit,
-        "forecast": ["sunny", "windy"],
+        "forecast": f,
     }
-    print(f"[FUNCTION CALLED: get_current_weather({location},{unit}) -> {weather_info['temperature']}]")
+    print(f"[FUNCTION CALLED: get_current_weather({location},{unit}) -> {t} {f}]")
     return json.dumps(weather_info)
+
 
 def send_email(subject, message, to, cc = []):
     """Send an email"""
-    print(f"[FUNCTION CALLED: send_email(to={to}, cc={cc}, subject='{subject}', message='{message}') ]")
-    return "Message sent"
+    response = "Message sent"
+    print(f"[FUNCTION CALLED: send_email(to='{to}', cc='{cc}', subject='{subject}', message='{message}') --> {response}]")
+    return response
 
 
 # DEFINE THE CALLBACK FUNCTION SPECS FOR CHAT GPT
@@ -202,7 +216,13 @@ print(run_conversation_with_function_calls("What's the weather like in Dallas Fo
 
 
 #%%
-print(run_conversation_with_function_calls("Please find out what's the weather like in Paris and send the information to my wife (rose.smith@gmail.com) and son (mike.smith@gmail.com) and copy me as well (charlie.smith@gmail.com) ?"))
+print(run_conversation_with_function_calls("Please find out what's the weather like in Paris and send the information to my wife (rose.smith@gmail.com) and son (mike.smith@gmail.com) and copy me as well (charlie.smith@gmail.com)."))
+
+#%%
+print(run_conversation_with_function_calls("""Please find out what's the weather like in Little Rock, AR.  
+                                           If it seems a good day for a picnic, then please send the information to my wife (rose.smith@gmail.com) and son (mike.smith@gmail.com) and copy me as well (charlie.smith@gmail.com). 
+                                           If it seems not a good day for a picnic, then don't send the email and just let me know why.
+                                           """))
 
 
 
