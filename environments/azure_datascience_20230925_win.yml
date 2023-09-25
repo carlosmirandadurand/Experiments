@@ -1,0 +1,72 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/azure_datascience_20230925_win.lock.yml
+# Use:
+#   $ conda activate azure_datascience_20230925_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n azure_datascience_20230925_win
+#   $ conda env create --file ./environments/azure_datascience_20230925_win.yml 1> azure_datascience_20230925_win.output.txt 2>&1 
+#   $ conda activate azure_datascience_20230925_win
+#   $ conda env export > ./environments/azure_datascience_20230925_win.lock.yml
+name: azure_datascience_20230925_win
+channels:
+  - conda-forge
+  - defaults
+  # - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - pyodbc
+  - snowflake-connector-python
+  - openai
+  - transformers
+  - tokenizers
+  - sentencepiece
+  - datasets
+  - tiktoken
+  - langchain
+  - streamlit
+  - wandb
+  - spacy
+  - ftfy
+  - pip:
+    - datetime
+    - python-dotenv
+    - pathlib
+    - argparse
+    - requests
+    - catboost 
+    - azure-ai-ml
+    - azure-keyvault-secrets
+    - azure-identity
+    - azure-devops
+    - mlflow
+    - ipykernel
+    - yfinance
+    - nltk
+    - spacy-llm
+    - pinecone-client[grpc]
+    - pinecone_datasets
+
+    # In other environments (master list):
+    # - flask
+    # - flask-sqlalchemy
+    # - flask-login
+    # - fbprophet
+    # - gurobipy
+    # - accelerate
+    # - tensorboard
+    # - sacremoses
+    # - refinitiv.data
+    # - git+https://github.com/tableau/document-api-python.git
+    # - ray
+   
