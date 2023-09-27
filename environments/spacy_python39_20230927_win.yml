@@ -1,0 +1,31 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/spacy_python39_20230927_win.lock.yml
+# Use:
+#   $ conda activate spacy_python39_20230927_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n spacy_python39_20230927_win
+#   $ conda env create --file ./environments/spacy_python39_20230927_win.yml 1> spacy_python39_20230927_win.output.txt 2>&1 
+#   $ conda activate spacy_python39_20230927_win
+#   $ conda env export > ./environments/spacy_python39_20230927_win.lock.yml
+name: spacy_python39_20230927_win
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - pandas
+  - numpy
+  - scikit-learn
+  - openai
+  - spacy
+  - transformers
+  - datasets
+  - pytorch
+
+
+  
+
