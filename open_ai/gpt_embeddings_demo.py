@@ -16,7 +16,8 @@ from dotenv import load_dotenv
 
 
 #%% 
-# Connect to Open AO
+# Connect to Open AI
+
 load_dotenv()
 openai.organization = os.getenv('openai_organization_id')
 openai.api_key      = os.getenv('openai_organization_key')
