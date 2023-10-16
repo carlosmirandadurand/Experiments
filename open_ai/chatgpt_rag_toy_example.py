@@ -105,6 +105,9 @@ context = " ".join(top_3_sentences)
 # Assuming that the model works better with the format "question: [User's question] context: [Context]",
 combined_input = f"question: {query} context: {context}"
 
+
+#%%
+
 # Initialize the model and tokenizer
 MODEL_NAME = "t5-base"
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
@@ -117,8 +120,9 @@ outputs = model.generate(input_ids)
 # Decode the outputs to get the response text
 response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-print(f"Question: {query}")
-print(f"Response: {response}")
+print(f"User Question: {query}")
+print(f"Model input: {combined_input}")
+print(f"Model response: {response}")
 
 
 #%%
@@ -128,11 +132,12 @@ print(f"Response: {response}")
 # Here, we're forming a prompt for ChatGPT where it's provided both the user's question and the context from our top retrieved sentences.
 prompt = f"Based on the following information: '{context}', answer the question: '{query}'."
 
-# Generate a response using ChatGPT:
+# Generate a response using GPT:
 response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=150)
 
-print(f"Question: {query}")
-print(f"Response: {response.choices[0].text.strip()}")
+print(f"User Question: {query}")
+print(f"Model Prompt:", prompt)
+print(f"Model Response: {response.choices[0].text.strip()}")
 
 
 
@@ -142,7 +147,7 @@ print(f"Response: {response.choices[0].text.strip()}")
 # Contextualize the question using a conversation structure:
 messages = [
     {"role": "system", "content": "You are a helpful assistant that uses context to answer questions."},
-    {"role": "user", "content": f"Based on the following information: '{context}', what is the answer to: '{query}'?"}
+    {"role": "user", "content": f"Based on the following information: '{context}', what is the answer to: '{query}'?  Please answer in Spanish"}
 ]
 
 # Generate a response using ChatGPT with Chat Completion API:
@@ -151,8 +156,9 @@ response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages
 # Extracting the assistant's message from the response
 assistant_message = response.choices[0].message['content']
 
-print(f"Question: {query}")
-print(f"Response: {assistant_message}")
+print(f"User Question: {query}")
+print(f"Model Messages:", prompt)
+print(f"Model Response: {assistant_message}")
 
 
 
