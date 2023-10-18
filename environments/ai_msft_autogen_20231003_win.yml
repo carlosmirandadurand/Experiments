@@ -1,0 +1,83 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/ai_msft_autogen_20231003_win.lock.yml
+# Use:
+#   $ conda activate ai_msft_autogen_20231003_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n ai_msft_autogen_20231003_win
+#   $ conda env create --file ./environments/ai_msft_autogen_20231003_win.yml 1> ai_msft_autogen_20231003_win.output.txt 2>&1 
+#   $ conda activate ai_msft_autogen_20231003_win
+#   $ conda env export > ./environments/ai_msft_autogen_20231003_win.lock.yml
+name: ai_msft_autogen_20231003_win
+channels:
+  - conda-forge
+  - defaults
+  # - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  - pip
+  - pip:
+    - pandas
+    - numpy
+    - matplotlib
+    - scikit-learn
+    - openai
+    - transformers
+    - tokenizers
+    - datasets
+    - streamlit 
+    - datetime
+    - python-dotenv
+    - pathlib
+    - argparse
+    - requests
+    - pyautogen[blendsearch,mathchat]
+    - lightgbm[scikit-learn,pandas]
+    
+    # INSTALLED IN OTHER ENVIRONMENTS:
+    # - pyodbc
+    # - snowflake-connector-python
+    # - azure-ai-ml
+    # - azure-keyvault-secrets
+    # - azure-identity
+    # - azure-devops
+    # - xgboost
+    # - catboost
+    # - mlflow
+    # - flaml
+    # - sentencepiece
+    # - accelerate
+    # - tiktoken
+    # - langchain
+    # - wandb
+    # - ftfy
+    # - faiss-cpu
+    # - flask
+    # - flask-sqlalchemy
+    # - flask-login
+    # - fbprophet
+    # - gurobipy
+    # - accelerate
+    # - tensorboard
+    # - sacremoses
+    # - refinitiv.data
+    # - git+https://github.com/tableau/document-api-python.git
+    # - ray
+    # - feast
+    # - pydantic 
+    # - pytorch torchvision torchaudio cpuonly -c pytorch  (remember to add the channel)
+    # - ipykernel
+    # - yfinance
+    # - nltk
+    # - spacy
+    # - spacy-llm
+    # - cohere
+    # - replicate
+    # - pinecone-client[grpc]
+    # - pinecone_datasets
+    # - local-llm-function-calling

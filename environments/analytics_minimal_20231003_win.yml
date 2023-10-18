@@ -1,0 +1,86 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/analytics_minimal_20231003_win.lock.yml
+# Use:
+#   $ conda activate analytics_minimal_20231003_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n analytics_minimal_20231003_win
+#   $ conda env create --verbose --file ./environments/analytics_minimal_20231003_win.yml 1> analytics_minimal_20231003_win.output.txt 2>&1 
+#   $ conda activate analytics_minimal_20231003_win
+# NOTE : Additional manual steps:
+#   $ python.exe -m pip install --upgrade pip
+#   More mainual installation FAILED.... environment not created yet... to be fixed...
+#   $ conda env export > ./environments/analytics_minimal_20231003_win.lock.yml
+name: analytics_minimal_20231003_win
+channels:
+  - conda-forge
+  - defaults
+  # - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - pip:
+    - datetime
+    - python-dotenv
+    - pathlib
+
+    # To be installed manually:
+    # - snowflake-connector-python
+
+
+    # In other environments (master list):
+    # - argparse
+    # - requests
+    # - openai
+    # - pyodbc
+    # - catboost 
+    # - mlflow
+    # - ipykernel
+    # - yfinance
+    # - nltk
+    # - spacy-llm
+    # - cohere
+    # - replicate
+    # - pinecone-client[grpc]
+    # - pinecone_datasets
+    # - local-llm-function-calling
+    # - transformers
+    # - tokenizers
+    # - datasets
+    # - sentencepiece
+    # - tiktoken
+    # - langchain
+    # - streamlit
+    # - wandb
+    # - spacy
+    # - ftfy
+    # - faiss-cpu
+    # - accelerate
+    # - azure-ai-ml
+    # - azure-keyvault-secrets
+    # - azure-identity
+    # - azure-devops
+    # - flask
+    # - flask-sqlalchemy
+    # - flask-login
+    # - fbprophet
+    # - gurobipy
+    # - accelerate
+    # - tensorboard
+    # - sacremoses
+    # - refinitiv.data
+    # - git+https://github.com/tableau/document-api-python.git
+    # - ray
+    # - feast
+    # - pydantic 
+    # - pytorch torchvision torchaudio cpuonly -c pytorch  (remember to add the channel)
+   
