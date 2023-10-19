@@ -9,9 +9,6 @@
 #   $ conda env remove -n analytics_minimal_20231003_win
 #   $ conda env create --verbose --file ./environments/analytics_minimal_20231003_win.yml 1> analytics_minimal_20231003_win.output.txt 2>&1 
 #   $ conda activate analytics_minimal_20231003_win
-# NOTE : Additional manual steps:
-#   $ python.exe -m pip install --upgrade pip
-#   More mainual installation FAILED.... environment not created yet... to be fixed...
 #   $ conda env export > ./environments/analytics_minimal_20231003_win.lock.yml
 name: analytics_minimal_20231003_win
 channels:
@@ -22,7 +19,7 @@ channels:
   # - bioconda
   # - menpo
 dependencies:
-  - python>=3.10
+  - python=3.10
   - pip
   - pandas
   - numpy
@@ -32,10 +29,7 @@ dependencies:
     - datetime
     - python-dotenv
     - pathlib
-
-    # To be installed manually:
-    # - snowflake-connector-python
-
+    - snowflake-connector-python
 
     # In other environments (master list):
     # - argparse
