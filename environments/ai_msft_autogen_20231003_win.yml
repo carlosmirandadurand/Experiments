@@ -19,62 +19,61 @@ channels:
   # - bioconda
   # - menpo
 dependencies:
-  - python>=3.10
+  - python==3.10
   - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - openai
+  - transformers
+  - tokenizers
+  - datasets
+  - langchain
+  - streamlit
+  - wandb
+  - spacy
+  - ftfy
   - pip:
-    - pandas
-    - numpy
-    - matplotlib
-    - scikit-learn
-    - openai
-    - transformers
-    - tokenizers
-    - datasets
-    - streamlit 
     - datetime
     - python-dotenv
     - pathlib
     - argparse
     - requests
+    - azure-ai-ml
+    - azure-keyvault-secrets
+    - azure-identity
+    - azure-devops
+    - mlflow
+    - ipykernel
+    - nltk
     - pyautogen[blendsearch,mathchat]
     - lightgbm[scikit-learn,pandas]
-    
+
     # INSTALLED IN OTHER ENVIRONMENTS:
     # - pyodbc
     # - snowflake-connector-python
-    # - azure-ai-ml
-    # - azure-keyvault-secrets
-    # - azure-identity
-    # - azure-devops
     # - xgboost
     # - catboost
-    # - mlflow
     # - flaml
     # - sentencepiece
     # - accelerate
     # - tiktoken
-    # - langchain
-    # - wandb
-    # - ftfy
     # - faiss-cpu
     # - flask
     # - flask-sqlalchemy
     # - flask-login
     # - fbprophet
     # - gurobipy
-    # - accelerate
-    # - tensorboard
     # - sacremoses
     # - refinitiv.data
     # - git+https://github.com/tableau/document-api-python.git
     # - ray
     # - feast
     # - pydantic 
+    # - tensorboard
     # - pytorch torchvision torchaudio cpuonly -c pytorch  (remember to add the channel)
-    # - ipykernel
     # - yfinance
-    # - nltk
-    # - spacy
     # - spacy-llm
     # - cohere
     # - replicate
