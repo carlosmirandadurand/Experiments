@@ -5,6 +5,7 @@
 #    https://github.com/replicate/replicate-python
 
 
+#%%
 import replicate
 import os
 from dotenv import load_dotenv
@@ -21,25 +22,26 @@ print("Token length: ", len(os.getenv('REPLICATE_API_TOKEN')))
 
 
 #%%
-# Replicate demo example  
+# Replicate demo example (Stable Difusion) 
 
-# r = replicate.run(
-#         "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
-#         input={"prompt": "a 19th century portrait of a wombat gentleman"}
-#     )
+r = replicate.run(
+        "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
+        input={"prompt": "a 19th century portrait of a wombat gentleman"}
+    )
 
-# r
+r
 
 
 #%% 
-# Prompts
+# LLM Prompts (Llama v2)
 
 system_prompt = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-user_prompt = "Write a standard SQL query to pull the sum total of the 'cost' variable, from the table 'f_accounting_by_month' with 'transaction_month' between '202211' and '202310' grouping by 'client_id' and 'client_name'."
+
+user_prompt = "When was America discovered?"
 
 
 #%% 
-# Call LLM 
+# Call LLM (Llama v2)
 
 
 llm_input = {"prompt": f"{system_prompt} {user_prompt} Assistant: ",
@@ -54,13 +56,15 @@ llm_model = "a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035f
 
 llm_output_gen = replicate.run(llm_model, input = llm_input) 
 
-llm_full_response = ""
-for item in llm_output_gen:
-  llm_full_response += item
+llm_output_gen
 
 
 #%%
-# See results
+# See Llama v2 results
+
+llm_full_response = ""
+for item in llm_output_gen:
+  llm_full_response += item
 
 print(llm_full_response)
 
