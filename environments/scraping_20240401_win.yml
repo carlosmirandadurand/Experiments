@@ -1,0 +1,62 @@
+# Conda environment for Web Scraping (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/scraping_20240401_win.lock.yml
+# Use:
+#   $ conda activate scraping_20240401_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n scraping_20240401_win
+#   $ conda env create --file ./environments/scraping_20240401_win.yml --verbose 1> scraping_20240401_win.output.txt 2>&1 
+#   $ conda activate scraping_20240401_win
+#   $ conda env export > ./environments/scraping_20240401_win.lock.yml
+name: scraping_20240401_win
+channels:
+  - conda-forge
+  - defaults
+  # - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  # - python=3.10.*
+  - pip
+  - pandas
+  - numpy
+  - requests
+  - pyodbc
+  - snowflake-connector-python
+  - snowflake-snowpark-python
+  - pyarrow
+  - openai
+  - transformers
+  - tokenizers
+  - sentencepiece
+  - datasets
+  - langchain
+  - spacy
+  - ftfy
+  - tqdm
+  - scrapy
+  - beautifulsoup4
+  - lxml
+  - selenium
+  - python-socks
+  - pyquery
+  - mechanicalsoup  
+  - pip:
+    - datetime
+    - python-dotenv
+    - pathlib
+    - argparse
+    - ipykernel
+    - nltk
+    - spacy-llm
+    - spacy-transformers
+    - replicate
+    - pinecone-client[grpc]
+    - pinecone_datasets
+    - weaviate-client
+
+   
