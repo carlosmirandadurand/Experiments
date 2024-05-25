@@ -7,7 +7,7 @@ import os
 
 from dotenv import load_dotenv
 
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI      # Deprecated: from langchain.llms import OpenAI
 from langchain_openai import ChatOpenAI  # Deprecated: from langchain.chat_models import   
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.schema import BaseOutputParser
