@@ -1,0 +1,51 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/ai_aws_langchain_20240524_win.lock.yml
+# Use:
+#   $ conda activate ai_aws_langchain_20240524_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n ai_aws_langchain_20240524_win
+#   $ conda env create --file ./environments/ai_aws_langchain_20240524_win.yml --verbose 1> ai_aws_langchain_20240524_win.output.txt 2>&1 
+#   $ conda activate ai_aws_langchain_20240524_win
+#   $ conda env export > ./environments/ai_aws_langchain_20240524_win.lock.yml
+name: ai_aws_langchain_20240524_win
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  # - python=3.10.*
+  - pip
+  - python-dotenv
+  - pathlib
+  - requests
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - pydantic
+  - langchain
+  - boto3
+  - awscli
+  - sagemaker
+  - openai
+  - tiktoken
+  - streamlit
+  - tqdm
+  - pip:
+    - datetime
+    - argparse
+    - ipykernel
+    - langchain_community
+    - replicate
+    - pinecone-client[grpc]
+    - pinecone_datasets
+    - weaviate-client
+    
