@@ -4,26 +4,28 @@
 #%%
 
 import os
+
+from dotenv import load_dotenv
+
 from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI  # Deprecated: from langchain.chat_models import   
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.schema import BaseOutputParser
 
-from dotenv import load_dotenv
 
 
 
 #%%
 # Define a prompt template (input)
 
-template = """You are a helpful assistant who generates comma separated lists.
+system_message = """You are a helpful assistant who generates comma separated lists.
 A user will pass in a category, and you should generate 5 objects in that category in a comma separated list.
 ONLY return a comma separated list, and nothing more."""
 
 human_template = "{text}"
 
 chat_prompt = ChatPromptTemplate.from_messages([
-    ("system", template),
+    ("system", system_message),
     ("human", human_template),
 ])
 
