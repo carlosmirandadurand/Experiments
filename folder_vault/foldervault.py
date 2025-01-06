@@ -224,3 +224,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
 
+# To generate executable:
+# pip install pyinstaller
+# pyinstaller --onefile --name filevault filevault.py
+# cd dist
+# add exe to path
+# filevault.exe pack my_folder 
+
