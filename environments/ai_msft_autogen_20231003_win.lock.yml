@@ -335,7 +335,7 @@ dependencies:
       - pbr==5.11.1
       - portalocker==2.8.2
       - prettytable==3.9.0
-      - pyautogen==0.1.12
+      - ag2==0.1.12
       - pydantic==1.10.9
       - pydash==7.0.5
       - pyjwt==2.8.0

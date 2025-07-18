@@ -47,7 +47,7 @@ dependencies:
     - mlflow
     - ipykernel
     - nltk
-    - pyautogen[blendsearch,mathchat]
+    - ag2[blendsearch,mathchat]
     - lightgbm[scikit-learn,pandas]
 
     # INSTALLED IN OTHER ENVIRONMENTS:
