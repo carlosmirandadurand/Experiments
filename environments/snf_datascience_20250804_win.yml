@@ -1,0 +1,47 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/snf_datascience_20250804_win.lock.yml
+# Use:
+#   $ conda activate snf_datascience_20250804_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n snf_datascience_20250804_win
+#   $ conda env create --file ./environments/snf_datascience_20250804_win.yml --verbose 1> snf_datascience_20250804_win.output.txt 2>&1 
+#   $ conda activate snf_datascience_20250804_win
+#   $ conda env export > ./environments/snf_datascience_20250804_win.lock.yml
+name: snf_datascience_20250804_win
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - python=3.10
+  - pip
+
+  # Core scientific / DS stack
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - seaborn
+
+  # Notebook support
+  - jupyter
+  - ipykernel
+  - notebook
+
+  # Utils / system tools
+  - psutil
+  - pyyaml
+  - requests
+  - pyodbc
+
+  - pip:
+      - python-dotenv
+      - azure-identity
+      - azure-devops
+      - snowflake-connector-python[secure-local-storage,pandas]
+      - snowflake-snowpark-python
+      - snowflake-ml-python 

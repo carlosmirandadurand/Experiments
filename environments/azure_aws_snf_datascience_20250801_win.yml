@@ -1,0 +1,125 @@
+# Conda environment for Data Science in Azure (windows local machine)
+# Platform: Windows / 64 bits
+# First Time Use:
+#   $ conda env create --file ./environments/azure_aws_snf_datascience_20250801_win.lock.yml
+# Use:
+#   $ conda activate azure_aws_snf_datascience_20250801_win
+# Creation for the record in Windows:
+#   $ conda info --envs
+#   $ conda env remove -n azure_aws_snf_datascience_20250801_win
+#   $ conda env create --file ./environments/azure_aws_snf_datascience_20250801_win.yml --verbose 1> azure_aws_snf_datascience_20250801_win.output.txt 2>&1 
+#   $ conda activate azure_aws_snf_datascience_20250801_win
+#   $ conda env export > ./environments/azure_aws_snf_datascience_20250801_win.lock.yml
+name: azure_aws_snf_datascience_20250801_win
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+  # - pytorch
+  # - bioconda
+  # - menpo
+dependencies:
+  - python>=3.10
+  - pip
+  # Core ML / DS stack
+  - pytorch
+  - torchvision
+  - torchaudio
+  - faiss-cpu
+  - numpy
+  - pandas
+  - pyarrow
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - seaborn
+  - jupyter
+  - ipykernel
+  - openpyxl
+  - networkx
+  - tqdm
+  - umap-learn
+  - spacy
+  - fastapi
+  - streamlit
+  - requests
+  - pip:
+      # Hugging Face ecosystem
+      - transformers
+      - accelerate
+      - datasets
+      - tokenizers
+      - sentencepiece
+      - huggingface-hub
+      - ftfy
+      - wandb
+      # LangChain ecosystem
+      - langchain
+      - langchain-core
+      - langchain-community
+      - langchain-aws
+      - langchain-openai
+      - langchain-text-splitters
+      - langsmith
+      - langfuse
+      - langgraph
+      # AWS SDKs / APIs
+      - aws-cdk-lib
+      - awscli
+      - boto3
+      - botocore
+      - constructs
+      - sagemaker
+      # Azure SDKs
+      - azure-ai-ml
+      - azure-devops
+      - azure-identity
+      - azure-keyvault-secrets
+      # Snowflake stack
+      - snowflake-connector-python[secure-local-storage,pandas]
+      - snowflake-snowpark-python
+      - pyodbc
+      # Other DBs & Vector stores
+      - neo4j
+      - py2neo
+      - pinecone-client[grpc]
+      - weaviate-client
+      # LLM / NLP extras
+      - openai
+      - tiktoken
+      - pypdf
+      - spacy-llm
+      - spacy-transformers
+      - replicate
+      # Utils / Infra
+      - python-dotenv
+      - pyyaml
+      - pydantic
+      - pydantic-settings
+      - uvicorn
+      # Other ML
+      - catboost
+      # Data / Finance
+      - yfinance
+      # Extras
+      - pathlib
+      - datetime
+
+
+ # In other environments (master list):
+    # - annoy
+    # - flask
+    # - flask-sqlalchemy
+    # - flask-login
+    # - fbprophet
+    # - gurobipy
+    # - accelerate
+    # - tensorboard
+    # - sacremoses
+    # - refinitiv.data
+    # - git+https://github.com/tableau/document-api-python.git
+    # - ray
+    # - feast
+    # - pytorch torchvision torchaudio cpuonly -c pytorch  (remember to add the channel)
+    # - local-llm-function-calling
+   
